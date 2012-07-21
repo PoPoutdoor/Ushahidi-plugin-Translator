@@ -634,7 +634,7 @@ class Translator_Controller extends Admin_Controller
 		}
 
 		// add back last $arr
-		if ($grp_state OR ($last_state == $status)) $lists[$key] = $arr;
+		if (! empty($key) AND ($grp_state OR ($last_state == $status))) $lists[$key] = $arr;
 
 		// get file info
 		$file = ORM::factory('file', $id);
@@ -674,26 +674,16 @@ class Translator_Controller extends Admin_Controller
 				throw new Kohana_Exception($err);
 			}
 
-			$rel_path = $i18n_path.DIRECTORY_SEPARATOR.$locale;
-			if (!file_exists($rel_path))
-			{
-				if (! mkdir($rel_path, 0755))
-				{
-					$err = $rel_path . Kohana::lang('translator.not_writable');
-					throw new Kohana_Exception($err);
-				}
-			}
-
-			$file_path = $rel_path.DIRECTORY_SEPARATOR.$filename;
-
 			// get key=>text from db
-			$dat = ORM::factory('data')->where(array('file_id' => $id, 'locale' => $locale))->orderby('key', 'asc')->select_list('key', 'text');
-			$out = "<?php\n\t// Generate by Translator. More than 2 level array is not supported!\n\t// Note: output edited keys only!\n\t\$lang = array(";
+			$out = '';
+			$dat = ORM::factory('data')->where(array('file_id' => $id, 'locale' => $locale, 'status' => _SYN_))->orderby('key', 'asc')->select_list('key', 'text');
 			foreach ($dat as $key => $val)
 			{
+				$text = unserialize($val);
+				if (empty($text)) continue;
+
 				$out .= "\n\t'$key' => ";
 
-				$text = unserialize($val);
 				if (!is_array($text))
 				{
 					$out .= "'$text',";
@@ -708,17 +698,35 @@ class Translator_Controller extends Admin_Controller
 					$out .= "\t),";
 				}
 			}
-			$out .= "\n\t);\n?>";
 
-			if (file_put_contents($file_path, $out) === TRUE)
+			if (empty($out))
 			{
-				chmod($file_path, 0644);
+				// display empty output in red-box
+				return;
 			}
-			else
+
+			$rel_path = $i18n_path.DIRECTORY_SEPARATOR.$locale;
+			if (!file_exists($rel_path))
+			{
+				if (! mkdir($rel_path, 0755))
+				{
+					$err = $rel_path . Kohana::lang('translator.not_writable');
+					throw new Kohana_Exception($err);
+				}
+			}
+
+			$file_path = $rel_path.DIRECTORY_SEPARATOR.$filename;
+
+			// patch with php tags
+			$out = "<?php\n\t// Generate by Translator. More than 2 level array is not supported!\n\t// Note: output edited, non-empty keys only!\n\t\$lang = array(" . $out . "\n\t);\n?>";
+
+			if (file_put_contents($file_path, $out) === FALSE)
 			{
 				$err = Kohana::lang('translator.write_error') . $file_path;
 				throw new Kohana_Exception($err);
 			}
+
+			chmod($file_path, 0644);
 		}
 	}
 

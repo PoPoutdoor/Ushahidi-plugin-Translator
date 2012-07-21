@@ -14,7 +14,10 @@
 ?>
 			<div class="bg">
 				<h2>
-					<?php admin::manage_subtabs("translator"); ?>
+					<?php 
+						$i18n_text = Kohana::lang('translator.translator');
+						echo admin::manage_subtabs($i18n_text); 
+					?>
 				</h2>
 				<div style="width:100%;background-color:#FFD8D9;padding:4px 0px;"><img src="<?php echo url::file_loc('img'); ?>media/img/experimental.png" alt="<?php echo Kohana::lang('translator.experimental');?>" style="position:relative;float:left;padding-left:250px;padding-right:5px;"/><?php echo Kohana::lang('translator.experimental_warn');?></div>
 				<!-- red-box -->
