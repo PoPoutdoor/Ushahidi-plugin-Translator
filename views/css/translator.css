@@ -1,0 +1,186 @@
+/*
+	translator
+*/
+table td {
+	vertical-align: middle;
+	padding: 0 2px;
+}
+
+table th {
+	font-size: 14px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.head h3 {
+	color: #00699B;
+	float: left;
+	line-height: 24px;
+	padding: 0 0 0 20px;
+	font-size: 20px;
+	font-weight: normal;
+}
+
+.gotop {
+	color: #009900;
+	font-size: 12px;
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.locale {
+	font-size: 11px;
+	font-family: "Courier New",Courier,monospace;
+	font-weight: bold;
+}
+
+.file a {
+	text-decoration: none;
+}
+
+input#button {
+	font-size: 9px;
+	font-weight: bold;
+	text-decoration: none;
+	padding: 1px;
+}
+
+textarea {
+	border: 2px solid #D9D9D9;
+	float: left;
+	width: 98%;
+	height: 1.2em;
+	margin: 1px;
+	padding: 2px;
+	font-family: Verdana,Arial,sans-serif;
+	font-size: 1.1em;
+}
+
+textarea:focus {
+	border: 2px solid #A60003;
+}
+
+textarea.ro {
+	background-color: #999999;
+}
+
+textarea.ro:focus {
+	border: 2px dotted #A60003;
+}
+
+textarea.state_1:focus {
+	border: 2px dotted #A60003;
+}
+
+.tab ul li a.state_1, textarea {
+	background-color: #EDF9EE;
+}
+
+.tab ul li a.state_3 {
+	color: #000000;
+}
+
+.tab ul li a.state_2, .bar-wrap, .bar-value, textarea.state_2 {
+	background-color: #FFFFCC;
+}
+
+.tab ul li a.state_3, textarea.state_3 {
+	background-color: #368C00;
+}
+
+/* progress bar */
+bar-wrap{
+	position: relative;
+}
+
+.bar-wrap, .bar-value, .bar-text {
+	width: 300px; height: 14px;
+}
+
+.bar-value {
+	background-color: #EDF9EE;
+}
+
+.bar-wrap {
+	border: 1px solid #D9D9D9;
+}
+
+.bar-text {
+	top:0; left:0;
+	color: #000000;
+	font-size: 9px;
+	font-family: monospace;
+	font-weight: bold;
+	text-align: center;
+	width: 100%;
+}
+
+/*
+	kohana / ushahidi
+*/
+
+/*
+body {
+	color: #555555;
+	font: 12px/16px "Trebuchet MS",sans-serif;
+}
+
+.bg {
+	background: none repeat scroll 0 0 #FFFFFF;
+	clear: both;
+	overflow: hidden;
+	padding-bottom: 29px;
+	width: 940px;
+}
+
+.red-box {
+	background: none repeat scroll 0 0 #FFD8D9;
+	border: 2px solid #990000;
+	clear: both;
+	margin: 15px 21px 0 22px;
+	overflow: hidden;
+	padding: 9px 0 8px;
+	width: 893px;
+}
+
+.green-box {
+	color: #555555;
+	font-size: 14px;
+	padding: 0 0 0 15px;
+}
+
+
+ul.tabset li {
+	list-style: none outside none;
+}
+
+ul.tabset li a {
+	float: left;
+	font-size: 16px;
+	font-weight: bold;
+	height: 25px;
+	line-height: 20px;
+	padding: 5px 15px 0;
+	text-decoration: none;
+}
+
+ul.tabset li a.active {
+	background: none repeat scroll 0 0 #EEEEEE !important;
+	color: #636363;
+}
+
+.tab ul li {
+	list-style: none outside none;
+}
+
+.tab ul li a {
+	background: none repeat scroll 0 0 #F2F7FA;
+	border: 1px solid #D1D1D1;
+	color: #5C5C5C;
+	float: left;
+	line-height: 24px;
+	padding: 0 9px;
+	text-decoration: none;
+}
+
+*/
