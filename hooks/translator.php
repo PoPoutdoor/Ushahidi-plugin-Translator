@@ -38,7 +38,7 @@ class translator {
 	public function _translator_link()
 	{
 		$this_sub_page = Event::$data;
-		echo ($this_sub_page == "translator") ? "Translator" : "<a href=\"".url::site()."admin/manage/translator\">Translator</a>";
+		Kohana::lang('translator.translator') : "<a href=\"".url::site()."admin/manage/translator\">".Kohana::lang('translator.translator')."</a>";
 	}
 }
 
