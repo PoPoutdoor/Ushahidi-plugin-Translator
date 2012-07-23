@@ -521,10 +521,10 @@ class Translator_Controller extends Admin_Controller
 	}
 
 	/**
-	* Edit file with all configured locales
-	* @param int $id The file id 
-	*
 	* TODO: add Google translation support
+	* Edit file with all configured locales
+	*
+	* @param int $id The file id 
 	*/
 	public function edit($id = FALSE)
 	{
@@ -533,6 +533,8 @@ class Translator_Controller extends Admin_Controller
 		{
 			url::redirect(url::site().'admin/dashboard');
 		}
+
+		$locales = Kohana::config('translator.locales');
 
 		$this->template->content = new View('translator/edit');
 		$this->template->content->title = Kohana::lang('translator.edit');
@@ -547,11 +549,7 @@ class Translator_Controller extends Admin_Controller
 		if ($_POST)
 		{
 			$post = new Validation($_POST);
-
-			$locales = Kohana::config('translator.locales');
-			$locales_val = implode(",", $locales);
-
-			$post->add_rules('locale', 'required', 'in_array['.$locales_val.']');
+			$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
 			$post->add_rules('key', 'required', 'numeric');
 			$post->add_rules('subkey', 'alpha_dash');
 
@@ -574,11 +572,6 @@ class Translator_Controller extends Admin_Controller
 
 					$dat->status = _SYN_;
 					$dat->save();
-
-					if ($dat->saved == TRUE)
-					{
-						$key_saved = TRUE;
-					}
 				}
 				else
 				{
@@ -597,9 +590,9 @@ class Translator_Controller extends Admin_Controller
 		$file_data = ORM::factory('data')->where('file_id', $id)->orderby(array('key' => 'asc', 'id' => 'asc'))->find_all();
 
 		$last_key = '';
-		$arr = $lists = array();
+		$arr = $lists = $show = array();
 
-		$grp_state = (!$status) ? TRUE : FALSE;
+		$key_state = (!$status OR ($status == _SYN_)) ? TRUE : FALSE;
 		// pack data
 		foreach ($file_data as $dat)
 		{
@@ -625,16 +618,32 @@ class Translator_Controller extends Admin_Controller
 			}
 			elseif ($key != $last_key)
 			{
-				if ($grp_state OR ($last_state == $status)) $lists[$last_key] = $arr;
+				if ($status == _SYN_)
+				{
+					$logic = '$display = ($key_state AND '.implode(" AND ", $show).') ? TRUE : FALSE;';
+				}
+				else
+				{
+					$logic = '$display = ($key_state OR '.implode(" OR ", $show).') ? TRUE : FALSE;';
+				}
+
+				eval($logic);
+
+				if ($display) $lists[$last_key] = $arr;
 				$arr = $text;
+				$show = array();
+			}
+
+			if ($dat->locale != $locales[0])
+			{
+				$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
 			}
 
 			$last_key = $key;
-			$last_state = $state;
 		}
 
 		// add back last $arr
-		if (! empty($key) AND ($grp_state OR ($last_state == $status))) $lists[$key] = $arr;
+		if ($display) $lists[$key] = $arr;
 
 		// get file info
 		$file = ORM::factory('file', $id);
