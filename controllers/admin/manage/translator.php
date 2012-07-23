@@ -539,27 +539,47 @@ class Translator_Controller extends Admin_Controller
 		$this->template->content = new View('translator/edit');
 		$this->template->content->title = Kohana::lang('translator.edit');
 
-		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
-
-		$this->template->content->status = $status;
-
 		$error = FALSE;
-		$errors = array();
+		$errors = $lists = array();
+		$file_info = '';
+		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
 
 		if ($_POST)
 		{
 			$post = new Validation($_POST);
+
+			// something wrong, just return
+			if (! isset($post['update']) AND ! isset($post['reset']) AND ! isset($post['file'])) return;
+/*
+			// FIXME: not working
+			if (isset($post['file']))
+			{
+				$ret = $this->write($post['file']);
+
+				if (! empty($ret))
+				{
+					$errors[] = $ret;
+					$error = TRUE;
+				}
+
+//				url::redirect('admin/manage/translator#'.(int) $post['file']);
+				url::redirect('admin/manage/translator');
+			}
+*/
 			$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
 			$post->add_rules('key', 'required', 'numeric');
+			$post->add_rules('pos', 'required', 'numeric');
 			$post->add_rules('subkey', 'alpha_dash');
 
 			if($post->validate())
 			{
 				$locale = $post['locale'];
 				$key_id = $post['key'];
+				$pos = $post['pos'];
 
 				$value = $post[$locale];
 
+				// set key status
 				$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
 				if ($dat->loaded == TRUE AND $locale != $locales[0])
 				{
@@ -570,12 +590,16 @@ class Translator_Controller extends Admin_Controller
 								: $value;
 					$dat->text = serialize($db_text);
 
-					$dat->status = _SYN_;
+					if (isset($post['update']))	$dat->status = _SYN_;
+					if (isset($post['reset']))	$dat->status = _NEW_;
+
 					$dat->save();
+
+					url::redirect(url::current(TRUE) . '#' . $pos);
 				}
 				else
 				{
-					$errors[] = array(Kohana::lang('translator.error') => Kohana::lang('translator.err_load_key'));
+					$errors[] = Kohana::lang('translator.err_load_key');
 					$error = TRUE;
 				}
 			}
@@ -586,75 +610,80 @@ class Translator_Controller extends Admin_Controller
 			}
 		}
 
-		// generate key list
-		$file_data = ORM::factory('data')->where('file_id', $id)->orderby(array('key' => 'asc', 'id' => 'asc'))->find_all();
-
-		$last_key = '';
-		$arr = $lists = $show = array();
-
-		$key_state = (!$status OR ($status == _SYN_)) ? TRUE : FALSE;
-		// pack data
-		foreach ($file_data as $dat)
+		if (! $error)
 		{
-			$key = $dat->key;
-			$text = unserialize($dat->text);
-			$state = $dat->status;
+			// generate key list
+			$file_data = ORM::factory('data')->where('file_id', $id)->orderby(array('key' => 'asc', 'id' => 'asc'))->find_all();
 
-			if (!is_array($text))
-			{
-				$text = array($dat->locale => array($dat->id => $text, 'status' => $state));
-			}
-			else
-			{
-				foreach ($text as $key2 => $txt)
-				{
-					$text[$key2] = array($dat->locale => array($dat->id => $txt, 'status' => $state));
-				}
-			}
+			$last_key = '';
+			$arr = $lists = $show = array();
 
-			if ($key == $last_key OR empty($last_key))
+			$key_state = (!$status OR ($status == _SYN_)) ? TRUE : FALSE;
+			// pack data
+			foreach ($file_data as $dat)
 			{
-				$arr = array_merge_recursive($arr, $text);
-			}
-			elseif ($key != $last_key)
-			{
-				if ($status == _SYN_)
+				$key = $dat->key;
+				$text = unserialize($dat->text);
+				$state = $dat->status;
+
+				if (!is_array($text))
 				{
-					$logic = '$display = ($key_state AND '.implode(" AND ", $show).') ? TRUE : FALSE;';
+					$text = array($dat->locale => array($dat->id => $text, 'status' => $state));
 				}
 				else
 				{
-					$logic = '$display = ($key_state OR '.implode(" OR ", $show).') ? TRUE : FALSE;';
+					foreach ($text as $key2 => $txt)
+					{
+						$text[$key2] = array($dat->locale => array($dat->id => $txt, 'status' => $state));
+					}
 				}
 
-				eval($logic);
+				if ($key == $last_key OR empty($last_key))
+				{
+					$arr = array_merge_recursive($arr, $text);
+				}
+				elseif ($key != $last_key)
+				{
+					if ($status == _SYN_)
+					{
+						$logic = '$display = ($key_state AND '.implode(" AND ", $show).') ? TRUE : FALSE;';
+					}
+					else
+					{
+						$logic = '$display = ($key_state OR '.implode(" OR ", $show).') ? TRUE : FALSE;';
+					}
 
-				if ($display) $lists[$last_key] = $arr;
-				$arr = $text;
-				$show = array();
+					eval($logic);
+
+					if ($display) $lists[$last_key] = $arr;
+					$arr = $text;
+					$show = array();
+				}
+
+				if ($dat->locale != $locales[0])
+				{
+					$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
+				}
+
+				$last_key = $key;
 			}
+			// add back last $arr
+			if ($display) $lists[$key] = $arr;
 
-			if ($dat->locale != $locales[0])
-			{
-				$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
-			}
-
-			$last_key = $key;
+			// get file info
+			$file = ORM::factory('file', $id);
+			$file_info = $file->path.' -> '.$file->filename;
 		}
-
-		// add back last $arr
-		if ($display) $lists[$key] = $arr;
-
-		// get file info
-		$file = ORM::factory('file', $id);
 
 		// template
 		$this->template->content->error = $error;
 		$this->template->content->errors = $errors;
 		$this->template->content->file_id = $id;
-		$this->template->content->file_info = $file->path.' -> '.$file->filename;
+		$this->template->content->status = $status;
+		$this->template->content->file_info = $file_info;
 		$this->template->content->key_list = $lists;
 	}
+
 
 
 	/*
