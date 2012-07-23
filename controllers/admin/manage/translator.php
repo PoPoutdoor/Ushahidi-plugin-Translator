@@ -662,8 +662,12 @@ class Translator_Controller extends Admin_Controller
 	*
 	*  @parm $id: int file id
 	*/
-	public function write_file($id = false)
+	public function write($id = FALSE)
 	{
+		if (! $id) return;
+
+		$id = (int) $id;
+
 		$file = ORM::factory('file', $id);
 
 		$path = $file->path;
@@ -710,8 +714,8 @@ class Translator_Controller extends Admin_Controller
 
 			if (empty($out))
 			{
-				// display empty output in red-box
-				return;
+				$err = Kohana::lang('translator.not_write_empty');
+				throw new Kohana_Exception($err);
 			}
 
 			$rel_path = $i18n_path.DIRECTORY_SEPARATOR.$locale;
@@ -719,7 +723,7 @@ class Translator_Controller extends Admin_Controller
 			{
 				if (! mkdir($rel_path, 0755))
 				{
-					$err = $rel_path . Kohana::lang('translator.not_writable');
+					$err = Kohana::lang('translator.not_writable');
 					throw new Kohana_Exception($err);
 				}
 			}
@@ -737,8 +741,9 @@ class Translator_Controller extends Admin_Controller
 
 			chmod($file_path, 0644);
 		}
-	}
 
+		url::redirect('admin/manage/translator');
+	}
 }
 
 ?>
