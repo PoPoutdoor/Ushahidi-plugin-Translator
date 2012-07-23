@@ -37,7 +37,7 @@ If this doesn't works on your server, 0755 on directory & 0644 on file will do t
 
 Change log
 ----------
-2012-07-21 Initial release.
+2012-07-21 Initial release
 2012-07-24 Update README.md
 
 
