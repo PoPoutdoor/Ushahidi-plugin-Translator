@@ -34,21 +34,17 @@ class Translator_Controller extends Admin_Controller
 		define('_NEW_', 2);
 		define('_UPD_', 3);
 		// File status only
-//		define('VERIFIED', 4);
+		define('_WRITE_', 4);
 //		define('APPROVED', 8);
 //		define('WIP', 16);
 	}
 
 	function index()
 	{
-		$error = $first_run = FALSE;
-		$errors = array();
-
 		$this->template->content = new View('translator/main');
 
-
-		$this->template->content->update_db = FALSE;
-		$this->template->content->show = '';
+		$error = $first_run = $file_count = FALSE;
+		$errors = $files = array();
 
 		// check config and setup local vars
 		if ($this->check_config())
@@ -63,18 +59,40 @@ class Translator_Controller extends Admin_Controller
 		if ($_POST)
 		{
 			$post = new Validation($_POST);
-			$post->add_rules('file', 'required', 'numeric');
 
-			if($post->validate())
+			// something wrong, just return
+			if (! isset($post['write']) AND ! isset($post['edit'])) return;
+
+			$post->add_rules('file_id', 'required', 'numeric');
+
+			if ($post->validate())
 			{
-				$this->write_file($post['file']);
+				if (isset($post['edit']))
+				{
+					url::redirect('admin/manage/translator/edit/'.$post['file_id']);
+				}
+				else	//if (isset($post['write']))
+				{
+					$ret = $this->write($post['file_id']);
+
+					if (! empty($ret))
+					{
+						$errors[] = $ret;
+						$error = TRUE;
+					}
+				}
+			}
+			else
+			{
+				$errors = arr::overwrite($errors, $post->errors());
+				$error = TRUE;
 			}
 		}
 		else
 		{
 			$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
 
-			// check source data
+			// check db
 			$row = ORM::factory('file', 1);
 			if (!$row->id)
 			{
@@ -98,18 +116,22 @@ class Translator_Controller extends Admin_Controller
 			}
 		}
 
-		if ($status)
+		if (! $error)
 		{
-			$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-			$file_count = ORM::factory('file')->where('status', $status)->count_all();
-		}
-		else
-		{
-			$files = ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-			$file_count = ORM::factory('file')->count_all();
+			if ($status)
+			{
+				$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
+				$file_count = ORM::factory('file')->where('status', $status)->count_all();
+			}
+			else
+			{
+				$files = ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
+				$file_count = ORM::factory('file')->count_all();
+			}
 		}
 
 		$this->template->content->error = $error;
+		$this->template->content->errors = $errors;
 		$this->template->content->init_db = $first_run;
 		$this->template->content->files = $files;
 		$this->template->content->total = $file_count;
@@ -413,7 +435,6 @@ class Translator_Controller extends Admin_Controller
 
 					$add = array_diff_key($source, $lang);
 					$del = array_diff_key($lang, $source);
-					$upd = array_diff(array_diff($source, $lang), $add);
 				}
 				else
 				{
@@ -685,26 +706,28 @@ class Translator_Controller extends Admin_Controller
 	}
 
 
-
 	/*
 	*  Output locale file from db to filesystem
 	*
 	*  @parm $id: int file id
+	*
+	*  @return empty for write success, otherwise error message.
 	*/
 	public function write($id = FALSE)
 	{
-		if (! $id) return;
-
 		$id = (int) $id;
+
+		if (! $id) return FALSE;
 
 		$file = ORM::factory('file', $id);
 
 		$path = $file->path;
 		$filename = $file->filename;
 
-		$locales = Kohana::config('translator.locales');
 
+		$locales = Kohana::config('translator.locales');
 		$count = Kohana::config('translator.locale_count');
+
 		for ($i = 1; $i < $count; $i++)
 		{
 			$locale = $locales[$i];
@@ -712,8 +735,7 @@ class Translator_Controller extends Admin_Controller
 			$i18n_path = $path.DIRECTORY_SEPARATOR.'i18n';
 			if (! is_writable($i18n_path))
 			{
-				$err = $i18n_path . Kohana::lang('translator.not_writable');
-				throw new Kohana_Exception($err);
+				return $i18n_path . Kohana::lang('translator.not_writable');
 			}
 
 			// get key=>text from db
@@ -743,36 +765,35 @@ class Translator_Controller extends Admin_Controller
 
 			if (empty($out))
 			{
-				$err = Kohana::lang('translator.not_write_empty');
-				throw new Kohana_Exception($err);
+				return Kohana::lang('translator.not_write_empty');
 			}
 
 			$rel_path = $i18n_path.DIRECTORY_SEPARATOR.$locale;
-			if (!file_exists($rel_path))
+			if (! file_exists($rel_path))
 			{
 				if (! mkdir($rel_path, 0755))
 				{
-					$err = Kohana::lang('translator.not_writable');
-					throw new Kohana_Exception($err);
+					return $rel_path . Kohana::lang('translator.not_writable');
 				}
 			}
 
 			$file_path = $rel_path.DIRECTORY_SEPARATOR.$filename;
-
+/*
+			if (!is_writable($file_path))
+			{
+				return Kohana::lang('translator.write_error') . $file_path;
+			}
+*/
 			// patch with php tags
 			$out = "<?php\n\t// Generate by Translator. More than 2 level array is not supported!\n\t// Note: output edited, non-empty keys only!\n\t\$lang = array(" . $out . "\n\t);\n?>";
 
-			if (file_put_contents($file_path, $out) === FALSE)
-			{
-				$err = Kohana::lang('translator.write_error') . $file_path;
-				throw new Kohana_Exception($err);
-			}
-
+			file_put_contents($file_path, $out);
 			chmod($file_path, 0644);
 		}
 
-		url::redirect('admin/manage/translator');
+		return;
 	}
+
 }
 
 ?>

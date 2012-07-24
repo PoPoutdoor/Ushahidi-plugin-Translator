@@ -20,7 +20,10 @@ Note: No checking for valid locale code.
 == Installation ==
 1. Copy the entire /translator/ directory into your /plugins/ directory.
 2. Change owner recursively to your WEBSERVER USER.
-3. If default access rights doesn't works on your server, change access rights recursively on directory to 0755, on file to 0644. If you need to tighten access rights, on directory 0750 and file 0640 is recommended.
+3. If default access rights doesn't works on your server, change access rights 
+   recursively on directory to 0755, on file to 0644.
+   If you need to tighten access rights, recommended settings is: 
+     directory 0750 and file 0640.
 4. Activate the plugin.
 5. The plugin is accessible from: admin/manage/translator
 

@@ -6,6 +6,7 @@
 	'experimental_warn' => 'This is an experimental feature. The author cannot be <br/>responsible for any mishaps, bugs or quirks that show up when using Translator.',
 	'error' => 'Error!',
 	'file_list' => 'File list',
+	'go_index' => 'Go back to main page.',
 	'edit' => 'Edit',
 	'status_all' => 'All',
 	'status_syn' => 'Edited',
@@ -21,6 +22,7 @@
 	'view_1' => 'Show edited target entries',
 	'view_2' => 'Show new entries',
 	'view_3' => 'Show updated entries because of source updated',
+	'set_new' => 'Set New',
 	// edit - controller
 	'err_load_key' => 'Key not in database or Key is source locale!',
 	// main - template
@@ -37,5 +39,6 @@
 	'not_writable' => ' must be writable',
 	'write_error' => 'Write error on file ',
 	'progress' => 'Progress',
+	'not_write_empty' => 'Not writing empty file!',
 	);
 ?>

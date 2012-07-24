@@ -34,7 +34,7 @@ table th {
 	font-weight: bold;
 }
 
-.file a {
+.file a, h3 a {
 	text-decoration: none;
 }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * Translator view page.
+ * Translator Main page.
  *
  * PHP version 5
  * LICENSE: This source file is subject to LGPL license
@@ -23,10 +23,10 @@
 					<h3><?php echo Kohana::lang('translator.error');?></h3>
 					<ul>
 					<?php
-					foreach ($errors as $error_item => $error_description)
-					{
-						print (!$error_description) ? '' : "<li>" . $error_description . "</li>";
-					}
+						foreach ($errors as $error_item => $error_description)
+						{
+							print (!$error_description) ? '' : "<li>" . $error_description . "</li>";
+						}
 					?>
 					</ul>
 				</div>
@@ -46,6 +46,10 @@
 					</ul>
 				</div>
 				<?php endif; ?>
+				<?php if (! is_object($files)): ?>
+					<br /><br />
+					<h3 style="text-align: center;"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.go_index'); ?></a></h3>
+				<?php else: ?>
 				<!-- tabs -->
 				<div class="tabs">
 					<!-- tabset -->
@@ -118,8 +122,9 @@
 								</td>
 								<td style="text-align: right;">
 						<?php print form::open(); ?>
-									<input type="hidden" name="file" id="file" value="<?php echo $file->id; ?>">
-									<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
+									<input type="hidden" name="file_id" id="button" value="<?php echo $file->id; ?>">
+									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">
+									<input type="submit" name="write" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
 						<?php print form::close(); ?>
 								</td>
 							</tr>
@@ -140,4 +145,5 @@
 						</ul>
 					</div>
 				</div>
+				<?php endif; ?>
 			</div>
