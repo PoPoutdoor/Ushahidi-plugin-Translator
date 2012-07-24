@@ -9,8 +9,6 @@
 // other elements in array assumed target locale
 $config['locales'] = array(
 	'en_US',
-	'zh_TW',
-	'zh_CN',
 );
 
 ?>
