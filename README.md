@@ -22,6 +22,11 @@ To do
 4. Remove dependency of Ushahidi system (make this tool works on any kohana 2.3)
 5. Add feature to call external online translation on Edit page.
 
+Configuration
+-------------
+1. Edit config/translator.php to add target locale(s) of your translation work.
+2. Save config/translator.php. Note: No checking for valid locale code.
+
 Installation
 ------------
 1. Copy the entire /translator/ directory into your /plugins/ directory.
@@ -32,7 +37,7 @@ If this doesn't works on your server, 0755 on directory & 0644 on file will do t
 
 Change log
 ----------
-2012-07-21 Initial release.
-
+2012-07-21 Initial release
+2012-07-24 Update README.md
 
 
