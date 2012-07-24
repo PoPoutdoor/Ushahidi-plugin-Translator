@@ -1,6 +1,6 @@
 <?php
 /**
- * Translator view page.
+ * Translator Edit page.
  *
  * PHP version 5
  * LICENSE: This source file is subject to LGPL license
@@ -41,6 +41,14 @@
 					<!-- tab -->
 					<div class="tab">
 						<ul>
+<!-- FIXME: not working
+							<li style="float:right;">
+				<?php print form::open(); ?>
+					<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
+					<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
+				<?php print form::close(); ?>
+							</li>
+//-->
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' .$file_id ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _SYN_ ?>" class="state_<?php echo _SYN_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
@@ -71,13 +79,13 @@
 							<tr><td colspan="4"><hr /></td></tr>
 							<tr class="foot">
 								<td colspan="4" style="text-align:center">
-									<strong><?php count($key_list) . Kohana::lang('translator.num_entries'); ?></strong>
+									<strong><?php echo count($key_list) . Kohana::lang('translator.num_entries'); ?></strong>
 								</td>
 							</tr>
 						</tfoot>
+				<?php endif; ?>
 						<tbody>
-				<?php else: ?>
-						<tbody>
+				<?php if (! count($key_list)): ?>
 							<tr><td colspan="4"><hr /></td></tr>
 							<tr><td colspan="4" style="text-align: center;">
 								<h3><?php echo Kohana::lang('translator.no_result');?></h3>
@@ -88,11 +96,15 @@
 <?php
 	$locales = Kohana::config('translator.locales');
 
+	$pos = 0;
 	$css = ' cols="60"';
+	$action = '<input type="submit" name="update" id="button" value="'.Kohana::lang('translator.update').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
 
 	foreach ($key_list as $key => $val)
 	{
-		echo '<tr><td colspan="4"><hr /></td></tr>';
+		$pos++;
+		echo '<tr><td colspan="4"><a name="'.$pos.'"><hr /></a></td></tr>';
+
 		foreach ($val as $lang_key => $text)
 		{
 			if (in_array($lang_key, $locales))
@@ -102,13 +114,13 @@
 				{
 					$show = $key;
 					$style = $css.' readonly="readonly" class="ro"';
-					$action = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
+					$actions = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
 				}
 				else
 				{
 					$show = '';
 					$style = $css.' class="state_'.$text['status'].'"';
-					$action = '<input type="submit" name="button" id="button" value="'.Kohana::lang('translator.update').'" />';
+					$actions = $action;
 				}
 ?>
 <?php print form::open(); ?>
@@ -116,15 +128,12 @@
 							<td>
 								&nbsp;<?php echo $show; ?>
 								<input type="hidden" name="key" id="key" value="<?php echo $id; ?>">
-							</td>
-							<td class="locale">
-								<?php echo $lang_key; ?>
 								<input type="hidden" name="locale" id="locale" value="<?php echo $lang_key; ?>">
+								<input type="hidden" name="pos" id="pos" value="<?php echo $pos; ?>">
 							</td>
-							<td>
-								<?php print form::textarea($lang_key, $text[$id], $style); ?>
-							</td>
-							<td><?php echo $action; ?></td>
+							<td class="locale"><?php echo $lang_key; ?></td>
+							<td><?php print form::textarea($lang_key, $text[$id], $style); ?></td>
+							<td><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
@@ -139,13 +148,13 @@
 					{
 						$show = $key.'<br />&nbsp;&nbsp;&nbsp;&nbsp;=>&nbsp;&nbsp;'.$lang_key;
 						$style = $css.' readonly="readonly" class="ro"';
-						$action = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
+						$actions = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
 					}
 					else
 					{
 						$show = '';
 						$style = $css.' class="state_'.$text2['status'].'"';
-						$action = '<input type="submit" name="button" id="button" value="'.Kohana::lang('translator.update').'" />';
+						$actions = $action;
 					}
 ?>
 <?php print form::open(); ?>
@@ -154,15 +163,12 @@
 								&nbsp;<?php echo $show; ?>
 								<input type="hidden" name="key" id="key" value="<?php echo $id; ?>">
 								<input type="hidden" name="subkey" id="subkey" value="<?php echo $lang_key; ?>">
-							</td>
-							<td class="locale">
-								<?php echo $locale; ?>
 								<input type="hidden" name="locale" id="locale" value="<?php echo $locale; ?>">
+								<input type="hidden" name="pos" id="pos" value="<?php echo $pos; ?>">
 							</td>
-							<td>
-								<?php print form::textarea($locale, $text2[$id], $style); ?>
-							</td>
-							<td><?php echo $action; ?></td>
+							<td class="locale"><?php echo $locale; ?></td>
+							<td><?php print form::textarea($locale, $text2[$id], $style); ?></td>
+							<td><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
