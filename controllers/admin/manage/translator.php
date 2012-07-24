@@ -689,7 +689,7 @@ class Translator_Controller extends Admin_Controller
 				$last_key = $key;
 			}
 			// add back last $arr
-			if ($display) $lists[$key] = $arr;
+			if ( (isset($display) AND $display) OR (! $status) )$lists[$key] = $arr;
 
 			// get file info
 			$file = ORM::factory('file', $id);
