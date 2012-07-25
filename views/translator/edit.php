@@ -69,9 +69,9 @@
 					<table>
 						<thead>
 							<tr>
-								<th><?php echo Kohana::lang('translator.locale_key');?></th>
+								<th>&nbsp;<?php echo Kohana::lang('translator.locale_key');?></th>
 								<th colspan="2"><?php echo Kohana::lang('translator.locale_text');?></th>
-								<th class="col-4"><?php echo Kohana::lang('translator.actions');?></th>
+								<th style="text-align: center;"><?php echo Kohana::lang('translator.actions');?></th>
 							</tr>
 						</thead>
 				<?php if (count($key_list)): ?>
@@ -97,13 +97,15 @@
 	$locales = Kohana::config('translator.locales');
 
 	$pos = 0;
-	$css = ' cols="60"';
+	$css = ' cols="50"';
 	$action = '<input type="submit" name="update" id="button" value="'.Kohana::lang('translator.update').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
 
 	foreach ($key_list as $key => $val)
 	{
 		$pos++;
-		echo '<tr><td colspan="4"><a name="'.$pos.'"><hr /></a></td></tr>';
+		echo '<tr>
+		<td colspan="4"><a href="#" name="'.$pos.'"><div class="hr-line"><span>'.Kohana::lang('translator.go_top').'</span><p>&#8963;</p></div></a></td>
+		</tr>';
 
 		foreach ($val as $lang_key => $text)
 		{
@@ -114,7 +116,7 @@
 				{
 					$show = $key;
 					$style = $css.' readonly="readonly" class="ro"';
-					$actions = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
+					$actions = '';
 				}
 				else
 				{
@@ -133,7 +135,7 @@
 							</td>
 							<td class="locale"><?php echo $lang_key; ?></td>
 							<td><?php print form::textarea($lang_key, $text[$id], $style); ?></td>
-							<td><?php echo $actions; ?></td>
+							<td style="float: right;"><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
@@ -148,7 +150,7 @@
 					{
 						$show = $key.'<br />&nbsp;&nbsp;&nbsp;&nbsp;=>&nbsp;&nbsp;'.$lang_key;
 						$style = $css.' readonly="readonly" class="ro"';
-						$actions = '<a href="#" class="gotop" name="go_top">'.Kohana::lang('translator.go_top').'</a>';
+						$actions = '';
 					}
 					else
 					{
@@ -168,7 +170,7 @@
 							</td>
 							<td class="locale"><?php echo $locale; ?></td>
 							<td><?php print form::textarea($locale, $text2[$id], $style); ?></td>
-							<td><?php echo $actions; ?></td>
+							<td style="float: right;"><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
