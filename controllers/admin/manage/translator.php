@@ -41,8 +41,6 @@ class Translator_Controller extends Admin_Controller
 
 	function index()
 	{
-		$this->template->content = new View('translator/main');
-
 		$error = $first_run = $file_count = FALSE;
 		$errors = $files = array();
 
@@ -115,6 +113,9 @@ class Translator_Controller extends Admin_Controller
 				$this->sync_locale($lang_files);
 			}
 		}
+
+		$this->template->content = new View('translator/main');
+		$this->template->content->title = Kohana::lang('translator.translator');
 
 		if (! $error)
 		{
@@ -557,9 +558,6 @@ class Translator_Controller extends Admin_Controller
 
 		$locales = Kohana::config('translator.locales');
 
-		$this->template->content = new View('translator/edit');
-		$this->template->content->title = Kohana::lang('translator.edit');
-
 		$error = FALSE;
 		$errors = $lists = array();
 		$file_info = '';
@@ -571,65 +569,72 @@ class Translator_Controller extends Admin_Controller
 
 			// something wrong, just return
 			if (! isset($post['update']) AND ! isset($post['reset']) AND ! isset($post['file'])) return;
-/*
-			// FIXME: not working
+
 			if (isset($post['file']))
 			{
+				// check config and setup local vars
+				$this->check_config();
+
 				$ret = $this->write($post['file']);
-
-				if (! empty($ret))
+				if (is_null($ret))
 				{
-					$errors[] = $ret;
-					$error = TRUE;
+// TODO: write success messages handled by index()				
+//					url::redirect('admin/manage/translator#'.(int) $post['file']);
+					url::redirect('admin/manage/translator');
 				}
 
-//				url::redirect('admin/manage/translator#'.(int) $post['file']);
-				url::redirect('admin/manage/translator');
-			}
-*/
-			$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
-			$post->add_rules('key', 'required', 'numeric');
-			$post->add_rules('pos', 'required', 'numeric');
-			$post->add_rules('subkey', 'alpha_dash');
-
-			if($post->validate())
-			{
-				$locale = $post['locale'];
-				$key_id = $post['key'];
-				$pos = $post['pos'];
-
-				$value = $post[$locale];
-
-				// set key status
-				$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
-				if ($dat->loaded == TRUE AND $locale != $locales[0])
-				{
-					$db_text = unserialize($dat->text);
-
-					$db_text = (is_array($db_text))
-								? array_merge($db_text, array($post['subkey'] => $value))
-								: $value;
-					$dat->text = serialize($db_text);
-
-					if (isset($post['update']))	$dat->status = _SYN_;
-					if (isset($post['reset']))	$dat->status = _NEW_;
-
-					$dat->save();
-
-					url::redirect(url::current(TRUE) . '#' . $pos);
-				}
-				else
-				{
-					$errors[] = Kohana::lang('translator.err_load_key');
-					$error = TRUE;
-				}
+				$errors[] = $ret;
+				$error = TRUE;
 			}
 			else
 			{
-				$errors = arr::overwrite($errors, $post->errors());
-				$error = TRUE;
+				$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
+				$post->add_rules('key', 'required', 'numeric');
+				$post->add_rules('pos', 'required', 'numeric');
+				$post->add_rules('subkey', 'alpha_dash');
+
+				if($post->validate())
+				{
+					$locale = $post['locale'];
+					$key_id = $post['key'];
+					$pos = $post['pos'];
+
+					$value = $post[$locale];
+
+					// set key status
+					$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
+					if ($dat->loaded == TRUE AND $locale != $locales[0])
+					{
+						$db_text = unserialize($dat->text);
+
+						$db_text = (is_array($db_text))
+									? array_merge($db_text, array($post['subkey'] => $value))
+									: $value;
+						$dat->text = serialize($db_text);
+
+						if (isset($post['update']))	$dat->status = _SYN_;
+						if (isset($post['reset']))	$dat->status = _NEW_;
+
+						$dat->save();
+
+						url::redirect(url::current(TRUE) . '#' . $pos);
+					}
+					else
+					{
+						$errors[] = Kohana::lang('translator.err_load_key');
+						$error = TRUE;
+					}
+				}
+				else
+				{
+					$errors = arr::overwrite($errors, $post->errors());
+					$error = TRUE;
+				}
 			}
 		}
+
+		$this->template->content = new View('translator/edit');
+		$this->template->content->title = Kohana::lang('translator.edit');
 
 		if (! $error)
 		{
@@ -690,7 +695,7 @@ class Translator_Controller extends Admin_Controller
 			}
 			// add back last $arr
 			if (! $status OR $state == $status) $lists[$last_key] = $arr;
-//(isset($display) AND $display) OR 
+
 			// get file info
 			$file = ORM::factory('file', $id);
 			$file_info = $file->path.' -> '.$file->filename;
@@ -724,15 +729,14 @@ class Translator_Controller extends Admin_Controller
 		$path = $file->path;
 		$filename = $file->filename;
 
-
 		$locales = Kohana::config('translator.locales');
 		$count = Kohana::config('translator.locale_count');
 
 		for ($i = 1; $i < $count; $i++)
 		{
 			$locale = $locales[$i];
-
 			$i18n_path = $path.DIRECTORY_SEPARATOR.'i18n';
+
 			if (! is_writable($i18n_path))
 			{
 				return $i18n_path . Kohana::lang('translator.not_writable');
@@ -788,6 +792,7 @@ class Translator_Controller extends Admin_Controller
 			$out = "<?php\n\t// Generate by Translator. More than 2 level array is not supported!\n\t// Note: output edited, non-empty keys only!\n\t\$lang = array(" . $out . "\n\t);\n?>";
 
 			file_put_contents($file_path, $out);
+
 			chmod($file_path, 0644);
 		}
 

@@ -41,14 +41,12 @@
 					<!-- tab -->
 					<div class="tab">
 						<ul>
-<!-- FIXME: not working
 							<li style="float:right;">
 				<?php print form::open(); ?>
 					<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
 					<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
 				<?php print form::close(); ?>
 							</li>
-//-->
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' .$file_id ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _SYN_ ?>" class="state_<?php echo _SYN_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
