@@ -48,7 +48,7 @@
 				<?php endif; ?>
 				<?php if (! is_object($files)): ?>
 					<br /><br />
-					<h3 style="text-align: center;"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.go_index'); ?></a></h3>
+					<h3 class="action"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.go_index'); ?></a></h3>
 				<?php else: ?>
 				<!-- tabs -->
 				<div class="tabs">
@@ -75,13 +75,13 @@
 								<th width="18%"><?php echo Kohana::lang('translator.folder');?></th>
 								<th width="306px;"><?php echo Kohana::lang('translator.progress');?></th>
 								<th><?php echo Kohana::lang('translator.file');?></th>
-								<th style="text-align: right;"><?php echo Kohana::lang('translator.actions');?></th>
+								<th class="action"><?php echo Kohana::lang('translator.actions');?></th>
 							</tr>
 						</thead>
 						<?php if ($total): ?>
 						<tfoot>
 							<tr class="foot">
-								<td colspan="4" style="text-align: center;">
+								<td colspan="4" class="action">
 									<strong><?php echo $total.Kohana::lang('translator.file_count'); ?></strong>
 								</td>
 							</tr>
@@ -91,13 +91,14 @@
 						<?php if ($total == 0): ?>
 							<tr><td colspan="4"><hr /></td></tr>
 							<tr>
-								<td colspan="4" style="text-align: center;">
+								<td colspan="4" class="action">
 									<h3><?php echo Kohana::lang('translator.no_result');?></h3>
 								</td>
 							</tr>
 						<?php endif; ?>
 						<!-- dump file info -->
 						<?php
+							$locales = Kohana::config('translator.locales');
 							$last_folder = '';
 							foreach ($files as $file)
 							{
@@ -105,22 +106,26 @@
 								$hr = ($folder == $last_folder) ? FALSE : TRUE;
 
 								if ($hr)  echo '<tr><td colspan="4"><hr /></td></tr>';
+								$all_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id))->count_all();
+								$xlat_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id, 'status' => _SYN_))->count_all();
+								$progress = intval(floor(($xlat_keys / $all_keys)*100));
+								$progress .= '%';
 						?>
 							<tr>
 								<td><?php if ($hr)  echo $folder; ?></td>
 								<td>
 									<div class="bar-wrap">
-										<div class="bar-value" style="width: 90%;">
+										<div class="bar-value" style="width: <?php echo $progress;?>;">
 											<div class="bar-text">
-												90%
+												<?php echo $progress;?>
 											</div>
 										</div>
 									</div>
 								</td>
 								<td class="file">
-									<a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file->id; ?>"><?php echo $file->filename; ?></a>
+									<a name="file_<?php echo $file->id;?>" href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file->id; ?>"><?php echo $file->filename; ?></a>
 								</td>
-								<td style="text-align: right;">
+								<td class="rhs">
 						<?php print form::open(); ?>
 									<input type="hidden" name="file_id" id="button" value="<?php echo $file->id; ?>">
 									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">
@@ -140,7 +145,7 @@
 				<div class="tabs">
 					<div class="tab">
 						<ul>
-							<li style="float:right;"><a href="#" name="go_top"><?php echo Kohana::lang('translator.go_top');?></a></li>
+							<li class="rhs"><a href="#" name="go_top"><?php echo Kohana::lang('translator.go_top');?></a></li>
 							<li><a href="#" name="go_top"><?php echo Kohana::lang('translator.go_top');?></a></li>
 						</ul>
 					</div>

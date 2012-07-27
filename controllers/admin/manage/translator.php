@@ -582,9 +582,8 @@ class Translator_Controller extends Admin_Controller
 					$ret = $this->write($post['file']);
 					if (is_null($ret))
 					{
-	// TODO: write success messages handled by index() or just show here without redirect?		
-	//					url::redirect('admin/manage/translator#'.(int) $post['file']);
-						url::redirect('admin/manage/translator');
+						// TODO: write success messages handled by index() or just show here without redirect?		
+						url::redirect('admin/manage/translator#file_'.(int) $post['file']);
 					}
 					else
 					{
