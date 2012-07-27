@@ -16,6 +16,7 @@ class Translator_Controller extends Admin_Controller
 {
 	// database table prefix
 	var $table_prefix = '';
+	var $errors = array();
 
 	function __construct()
 	{
@@ -51,7 +52,11 @@ class Translator_Controller extends Admin_Controller
 		$error = $this->check_config($errors);
 
 		// skip on config error
-		if (! $error)
+		if ($error)
+		{
+			$errors = $this->errors;
+		}
+		else
 		{
 			$locales = Kohana::config('translator.locales');
 
@@ -143,11 +148,9 @@ class Translator_Controller extends Admin_Controller
 	/*
 	* Check config settings
 	*
-	* @parm	  &array empty or error message
-	*
-	* @return bool   TRUE means error
+	* @return bool   TRUE means error, error message at $this->errors
 	*/
-	private function check_config(&$errors)
+	private function check_config()
 	{
 		// Get the table prefix
 		$this->table_prefix = Kohana::config('database.default.table_prefix');
@@ -176,9 +179,9 @@ class Translator_Controller extends Admin_Controller
 			return FALSE;
 		}
 
-		$errors[] = ($i)
-				? Kohana::lang('translator.target_error')
-				: Kohana::lang('translator.source_error');
+		$this->errors = ($i)
+				? array(Kohana::lang('translator.target_error'))
+				: array(Kohana::lang('translator.source_error'));
 
 		return TRUE;
 	}
@@ -574,7 +577,7 @@ class Translator_Controller extends Admin_Controller
 			if (isset($post['file']))
 			{
 				// check config and setup local vars
-				if (! $this->check_config(&$errors))
+				if (! $this->check_config())
 				{
 					$ret = $this->write($post['file']);
 					if (is_null($ret))
@@ -585,13 +588,14 @@ class Translator_Controller extends Admin_Controller
 					}
 					else
 					{
-						$errors[] = $ret;
 						$error = TRUE;
+						$errors[] = $ret;
 					}
 				}
 				else
 				{
 					$error = TRUE;
+					$errors[] = $this->errors;
 				}
 			}
 			else
@@ -629,14 +633,14 @@ class Translator_Controller extends Admin_Controller
 					}
 					else
 					{
-						$errors[] = Kohana::lang('translator.err_load_key');
 						$error = TRUE;
+						$errors[] = Kohana::lang('translator.err_load_key');
 					}
 				}
 				else
 				{
-					$errors = arr::overwrite($errors, $post->errors());
 					$error = TRUE;
+					$errors = arr::overwrite($errors, $post->errors());
 				}
 			}
 		}
