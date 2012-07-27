@@ -3,7 +3,7 @@
 */
 table td {
 	vertical-align: middle;
-	padding: 0 2px;
+	padding: 1px;
 }
 
 table th {
@@ -20,14 +20,20 @@ table th {
 	font-size: 20px;
 	font-weight: normal;
 }
-/*
-.gotop {
-	color: #009900;
-	font-size: 12px;
-	font-weight: bold;
-	text-decoration: none;
+
+.action {
+	text-align: center;
 }
-*/
+
+.rhs, .tab ul li.rhs {
+	float: right;
+}
+
+.head .rhs input#button {
+	border: 2px solid red;
+	margin-right: 20px;
+}
+
 .locale {
 	font-size: 11px;
 	font-family: "Courier New",Courier,monospace;
@@ -39,6 +45,7 @@ table th {
 }
 
 input#button {
+	border: 1px solid black;
 	font-size: 9px;
 	font-weight: bold;
 	text-decoration: none;
@@ -115,11 +122,21 @@ bar-wrap{
 	width: 100%;
 }
 
+hr {
+	margin: 0;
+	padding: 0;
+	color: black;
+	background-color: #FFFFFF;
+	border-style: solid;
+	border-collapse: collapse;
+	height: 1px;
+	width: 100%;
+}
+
 .hr-line {
 	position: relative;
 	padding: 0;
 	border-top: solid 1px black;
-/*	background-color: #FFFFFF;	*/
 	width: 100%;
 }
 
@@ -127,22 +144,17 @@ bar-wrap{
 	position: absolute;
 	margin-top: -8px;
 	margin-left: 80px;
-	padding-left: 0.2em;
-	padding-right: 0.2em;
+	padding: 0 0.5em;
 	font-size: 9px;
 	background-color: #FFFFFF;
 }
 
 .hr-line p {
 	position: absolute;
-	margin-top: -5px;
-	margin-left: 872px;
-/*	padding-left: 1px;
-	padding-right: 1px;*/
-	font-size: 18px;
+	margin-top: -4px;
+	margin-left: 856px;
+	font-size: 24px;
 	background-color: #FFFFFF;
-/*	border: 1px solid #D9D9D9;
-	background-color: #F2F7FA;*/
 }
 
 /*

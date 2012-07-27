@@ -41,12 +41,6 @@
 					<!-- tab -->
 					<div class="tab">
 						<ul>
-							<li style="float:right;">
-				<?php print form::open(); ?>
-					<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
-					<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
-				<?php print form::close(); ?>
-							</li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' .$file_id ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _SYN_ ?>" class="state_<?php echo _SYN_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
@@ -56,6 +50,12 @@
 				</div>
 				<div class="head">
 					<h3><?php echo $file_info;?></h3>
+					<span class="rhs">
+				<?php print form::open(); ?>
+					<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
+					<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
+				<?php print form::close(); ?>
+					</span>
 				</div>
 				<!-- green-box -->
 				<?php if ($status):?>
@@ -68,24 +68,24 @@
 						<thead>
 							<tr>
 								<th>&nbsp;<?php echo Kohana::lang('translator.locale_key');?></th>
-								<th colspan="2"><?php echo Kohana::lang('translator.locale_text');?></th>
-								<th style="text-align: center;"><?php echo Kohana::lang('translator.actions');?></th>
+								<th><?php echo Kohana::lang('translator.locale');?></th>
+								<th><?php echo Kohana::lang('translator.text');?></th>
+								<th class="action"><?php echo Kohana::lang('translator.actions');?></th>
 							</tr>
 						</thead>
 				<?php if (count($key_list)): ?>
 						<tfoot>
-							<tr><td colspan="4"><hr /></td></tr>
 							<tr class="foot">
-								<td colspan="4" style="text-align:center">
+								<td colspan="4" class="action">
 									<strong><?php echo count($key_list) . Kohana::lang('translator.num_entries'); ?></strong>
 								</td>
 							</tr>
 						</tfoot>
 				<?php endif; ?>
 						<tbody>
-				<?php if (! count($key_list)): ?>
 							<tr><td colspan="4"><hr /></td></tr>
-							<tr><td colspan="4" style="text-align: center;">
+				<?php if (! count($key_list)): ?>
+							<tr><td colspan="4" class="action">
 								<h3><?php echo Kohana::lang('translator.no_result');?></h3>
 							</td></tr>
 							<tr><td colspan="4"><hr /></td></tr>
@@ -100,11 +100,6 @@
 
 	foreach ($key_list as $key => $val)
 	{
-		$pos++;
-		echo '<tr>
-		<td colspan="4"><a href="#" name="'.$pos.'"><div class="hr-line"><span>'.Kohana::lang('translator.go_top').'</span><p>&#8963;</p></div></a></td>
-		</tr>';
-
 		foreach ($val as $lang_key => $text)
 		{
 			if (in_array($lang_key, $locales))
@@ -133,7 +128,7 @@
 							</td>
 							<td class="locale"><?php echo $lang_key; ?></td>
 							<td><?php print form::textarea($lang_key, $text[$id], $style); ?></td>
-							<td style="float: right;"><?php echo $actions; ?></td>
+							<td class="rhs"><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
@@ -168,13 +163,19 @@
 							</td>
 							<td class="locale"><?php echo $locale; ?></td>
 							<td><?php print form::textarea($locale, $text2[$id], $style); ?></td>
-							<td style="float: right;"><?php echo $actions; ?></td>
+							<td class="rhs"><?php echo $actions; ?></td>
 						</tr>
 <?php print form::close(); ?>
 <?php
 				}
 			}
 		}
+
+		$pos++;
+
+		echo '<tr>
+		<td colspan="4"><a href="#" name="'.$pos.'"><div class="hr-line"><span>'.Kohana::lang('translator.go_top').'</span><p>&#8963;</p></div></a></td>
+		</tr>';
 	}
 ?>
 <!-- END: key list -->
@@ -184,7 +185,7 @@
 				<div class="tabs">
 					<div class="tab">
 						<ul>
-							<li style="float:right;"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
+							<li class="rhs"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
 							<li><a href="#" name="go_top"><?php echo Kohana::lang('translator.go_top');?></a></li>
 						</ul>
 					</div>
