@@ -50,12 +50,12 @@
 				</div>
 				<div class="head">
 					<h3><?php echo $file_info;?></h3>
-					<span class="rhs">
 				<?php print form::open(); ?>
-					<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
-					<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
-				<?php print form::close(); ?>
+					<span class="rhs">
+						<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
+						<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
 					</span>
+				<?php print form::close(); ?>
 				</div>
 				<!-- green-box -->
 				<?php if ($status):?>
@@ -83,7 +83,7 @@
 						</tfoot>
 				<?php endif; ?>
 						<tbody>
-							<tr><td colspan="4"><hr /></td></tr>
+							<tr><td colspan="4"><a href="#" name="key_0"><hr /></a></td></tr>
 				<?php if (! count($key_list)): ?>
 							<tr><td colspan="4" class="action">
 								<h3><?php echo Kohana::lang('translator.no_result');?></h3>
@@ -174,7 +174,7 @@
 		$pos++;
 
 		echo '<tr>
-		<td colspan="4"><a href="#" name="'.$pos.'"><div class="hr-line"><span>'.Kohana::lang('translator.go_top').'</span><p>&#8963;</p></div></a></td>
+		<td colspan="4"><a href="#" name="key_'.$pos.'"><div class="hr-line"><span>'.Kohana::lang('translator.go_top').'</span><p>&#8963;</p></div></a></td>
 		</tr>';
 	}
 ?>

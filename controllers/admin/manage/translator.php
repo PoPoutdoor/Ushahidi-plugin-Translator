@@ -629,7 +629,7 @@ class Translator_Controller extends Admin_Controller
 
 						$dat->save();
 
-						url::redirect(url::current(TRUE) . '#' . $pos);
+						url::redirect(url::current(TRUE) . '#key_' . $pos);
 					}
 					else
 					{
