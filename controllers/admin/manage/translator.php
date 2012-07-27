@@ -41,93 +41,95 @@ class Translator_Controller extends Admin_Controller
 
 	function index()
 	{
+		$this->template->content = new View('translator/main');
+		$this->template->content->title = Kohana::lang('translator.translator');
+
 		$error = $first_run = $file_count = FALSE;
 		$errors = $files = array();
 
 		// check config and setup local vars
-		if ($this->check_config())
-		{
-			return;
-		}
+		$error = $this->check_config($errors);
 
-		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
-
-		$locales = Kohana::config('translator.locales');
-
-		if ($_POST)
-		{
-			$post = new Validation($_POST);
-
-			// something wrong, just return
-			if (! isset($post['write']) AND ! isset($post['edit'])) return;
-
-			$post->add_rules('file_id', 'required', 'numeric');
-
-			if ($post->validate())
-			{
-				if (isset($post['edit']))
-				{
-					url::redirect('admin/manage/translator/edit/'.$post['file_id']);
-				}
-				else	//if (isset($post['write']))
-				{
-					$ret = $this->write($post['file_id']);
-
-					if (! empty($ret))
-					{
-						$errors[] = $ret;
-						$error = TRUE;
-					}
-				}
-			}
-			else
-			{
-				$errors = arr::overwrite($errors, $post->errors());
-				$error = TRUE;
-			}
-		}
-		else
-		{
-			$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
-
-			// check db
-			$row = ORM::factory('file', 1);
-			if (!$row->id)
-			{
-				// first run, init database
-				$this->template->content->init_db = TRUE;
-				$this->template->content->count = Kohana::config('translator.locale_count');
-
-				$this->import_locale($lang_files);
-			}
-			else
-			{
-	/*			// Kohana internal cache issue, no clear internal cache method		
-				if (is_file('application/cache/kohana_find_file_paths'))
-				{
-					unlink('application/cache/kohana_find_file_paths');
-					$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
-				}
-	*/
-				// check source locale files for updates
-				$this->sync_locale($lang_files);
-			}
-		}
-
-		$this->template->content = new View('translator/main');
-		$this->template->content->title = Kohana::lang('translator.translator');
-
+		// skip on config error
 		if (! $error)
 		{
-			if ($status)
+			$locales = Kohana::config('translator.locales');
+
+			if ($_POST)
 			{
-				$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-				$file_count = ORM::factory('file')->where('status', $status)->count_all();
+				$post = new Validation($_POST);
+
+				// something wrong, just return
+				if (! isset($post['write']) AND ! isset($post['edit'])) return;
+
+				$post->add_rules('file_id', 'required', 'numeric');
+
+				if ($post->validate())
+				{
+					if (isset($post['edit']))
+					{
+						url::redirect('admin/manage/translator/edit/'.$post['file_id']);
+					}
+					else	//if (isset($post['write']))
+					{
+						$ret = $this->write($post['file_id']);
+
+						if (! empty($ret))
+						{
+							$errors[] = $ret;
+							$error = TRUE;
+						}
+					}
+				}
+				else
+				{
+					$errors = arr::overwrite($errors, $post->errors());
+					$error = TRUE;
+				}
 			}
 			else
 			{
-				$files = ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-				$file_count = ORM::factory('file')->count_all();
+				$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
+
+				// check db
+				$row = ORM::factory('file', 1);
+				if (!$row->id)
+				{
+					// first run, init database
+					$this->template->content->init_db = TRUE;
+					$this->template->content->count = Kohana::config('translator.locale_count');
+
+					$this->import_locale($lang_files);
+				}
+				else
+				{
+		/*			// Kohana internal cache issue, no clear internal cache method		
+					if (is_file('application/cache/kohana_find_file_paths'))
+					{
+						unlink('application/cache/kohana_find_file_paths');
+						$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
+					}
+		*/
+					// check source locale files for updates
+					$this->sync_locale($lang_files);
+				}
+			}
+
+			// skip on POST error
+			if (! $error)
+			{
+				$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+
+				if ($status)
+				{
+					$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
+					$file_count = ORM::factory('file')->where('status', $status)->count_all();
+				}
+				else
+				{
+					$files = ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
+					$file_count = ORM::factory('file')->count_all();
+				}
 			}
 		}
 
@@ -141,9 +143,11 @@ class Translator_Controller extends Admin_Controller
 	/*
 	* Check config settings
 	*
-	* @return bool - TRUE means error
+	* @parm	  &array empty or error message
+	*
+	* @return bool   TRUE means error
 	*/
-	private function check_config()
+	private function check_config(&$errors)
 	{
 		// Get the table prefix
 		$this->table_prefix = Kohana::config('database.default.table_prefix');
@@ -172,16 +176,10 @@ class Translator_Controller extends Admin_Controller
 			return FALSE;
 		}
 
-		if (!$i)
-		{
-			$this->template->content->errors = array(Kohana::lang('translator.source_error'));
-		}
-		else
-		{
-			$this->template->content->errors = array(Kohana::lang('translator.target_error'));
-		}
+		$errors[] = ($i)
+				? Kohana::lang('translator.target_error')
+				: Kohana::lang('translator.source_error');
 
-		$this->template->content->error = TRUE;
 		return TRUE;
 	}
 
@@ -556,12 +554,15 @@ class Translator_Controller extends Admin_Controller
 			url::redirect(url::site().'admin/dashboard');
 		}
 
-		$locales = Kohana::config('translator.locales');
+		$this->template->content = new View('translator/edit');
+		$this->template->content->title = Kohana::lang('translator.edit');
 
 		$error = FALSE;
 		$errors = $lists = array();
 		$file_info = '';
+
 		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+		$locales = Kohana::config('translator.locales');
 
 		if ($_POST)
 		{
@@ -573,18 +574,25 @@ class Translator_Controller extends Admin_Controller
 			if (isset($post['file']))
 			{
 				// check config and setup local vars
-				$this->check_config();
-
-				$ret = $this->write($post['file']);
-				if (is_null($ret))
+				if (! $this->check_config(&$errors))
 				{
-// TODO: write success messages handled by index()				
-//					url::redirect('admin/manage/translator#'.(int) $post['file']);
-					url::redirect('admin/manage/translator');
+					$ret = $this->write($post['file']);
+					if (is_null($ret))
+					{
+	// TODO: write success messages handled by index() or just show here without redirect?		
+	//					url::redirect('admin/manage/translator#'.(int) $post['file']);
+						url::redirect('admin/manage/translator');
+					}
+					else
+					{
+						$errors[] = $ret;
+						$error = TRUE;
+					}
 				}
-
-				$errors[] = $ret;
-				$error = TRUE;
+				else
+				{
+					$error = TRUE;
+				}
 			}
 			else
 			{
@@ -632,9 +640,6 @@ class Translator_Controller extends Admin_Controller
 				}
 			}
 		}
-
-		$this->template->content = new View('translator/edit');
-		$this->template->content->title = Kohana::lang('translator.edit');
 
 		if (! $error)
 		{
