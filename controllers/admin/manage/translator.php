@@ -49,7 +49,7 @@ class Translator_Controller extends Admin_Controller
 		$errors = $files = array();
 
 		// check config and setup local vars
-		$error = $this->check_config($errors);
+		$error = $this->check_config();
 
 		// skip on config error
 		if ($error)
