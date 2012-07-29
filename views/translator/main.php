@@ -69,7 +69,7 @@
 				</div>
 				<!-- BEGIN: file list -->
 				<div class="table-holder">
-					<table>
+					<table class="xlat">
 						<thead>
 							<tr>
 								<th width="18%"><?php echo Kohana::lang('translator.folder');?></th>

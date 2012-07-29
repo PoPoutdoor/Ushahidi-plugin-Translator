@@ -49,7 +49,7 @@
 					</div>
 				</div>
 				<div class="head">
-					<h3><?php echo $file_info;?></h3>
+					<h3 class="info"><?php echo $file_info;?></h3>
 				<?php print form::open(); ?>
 					<span class="rhs">
 						<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
@@ -64,7 +64,7 @@
 				</div>
 				<?php endif; ?>
 				<div class="table-holder">
-					<table>
+					<table class="xlat">
 						<thead>
 							<tr>
 								<th>&nbsp;<?php echo Kohana::lang('translator.locale_key');?></th>

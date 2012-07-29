@@ -1,18 +1,18 @@
 /*
 	translator
 */
-table td {
+.xlat td {
 	vertical-align: middle;
 	padding: 1px;
 }
 
-table th {
+.xlat th {
 	font-size: 14px;
 	font-weight: bold;
 	text-align: left;
 }
 
-.head h3 {
+.head h3.info {
 	color: #00699B;
 	float: left;
 	line-height: 24px;
@@ -21,7 +21,7 @@ table th {
 	font-weight: normal;
 }
 
-.action {
+.xlat .action {
 	text-align: center;
 }
 
@@ -45,11 +45,11 @@ table th {
 	font-weight: bold;
 }
 
-.file a, h3 a {
+.file a {
 	text-decoration: none;
 }
 
-input#button {
+.rhs input#button {
 	border: 1px solid black;
 	font-size: 9px;
 	font-weight: bold;
@@ -57,7 +57,7 @@ input#button {
 	padding: 1px;
 }
 
-textarea {
+textarea.ro, textarea.state_1, textarea.state_2, textarea.state_3 {
 	border: 2px solid #D9D9D9;
 	float: left;
 	width: 98%;
@@ -84,8 +84,8 @@ textarea.state_1:focus {
 	border: 2px dotted #A60003;
 }
 
-.tab ul li a.state_1, textarea {
-	background-color: #EDF9EE;
+.tab ul li a.state_1, textarea.state_1 {
+	background-color: #A2F7A7;
 }
 
 .tab ul li a.state_3 {
@@ -110,7 +110,7 @@ bar-wrap{
 }
 
 .bar-value {
-	background-color: #EDF9EE;
+	background-color: #A2F7A7;
 }
 
 .bar-wrap {
