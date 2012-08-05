@@ -61,7 +61,7 @@
 					<div class="tab">
 						<ul>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
-							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _SYN_ ?>" class="state_<?php echo _SYN_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
+							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _UPD_ ?>" class="state_<?php echo _UPD_;?>"><?php echo Kohana::lang('translator.status_upd');?></a></li>
 						</ul>
@@ -128,7 +128,8 @@
 								<td class="rhs">
 						<?php print form::open(); ?>
 									<input type="hidden" name="file_id" id="button" value="<?php echo $file->id; ?>">
-									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">
+									<input type="submit" name="update" id="button" value="<?php echo Kohana::lang('translator.update');?>">&nbsp;
+									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">&nbsp;
 									<input type="submit" name="write" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
 						<?php print form::close(); ?>
 								</td>

@@ -35,7 +35,7 @@ class Translator_Controller extends Admin_Controller
 		define('_NEW_', 2);
 		define('_UPD_', 3);
 		// File status only
-		define('_WRITE_', 4);
+		define('_XLT_', 4);
 //		define('APPROVED', 8);
 //		define('WIP', 16);
 	}
@@ -58,6 +58,7 @@ class Translator_Controller extends Admin_Controller
 		}
 		else
 		{
+			$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
 			$locales = Kohana::config('translator.locales');
 
 			if ($_POST)
@@ -65,7 +66,7 @@ class Translator_Controller extends Admin_Controller
 				$post = new Validation($_POST);
 
 				// something wrong, just return
-				if (! isset($post['write']) AND ! isset($post['edit'])) return;
+				if (! isset($post['write']) AND ! isset($post['edit']) AND ! isset($post['update'])) return;
 
 				$post->add_rules('file_id', 'required', 'numeric');
 
@@ -75,7 +76,7 @@ class Translator_Controller extends Admin_Controller
 					{
 						url::redirect('admin/manage/translator/edit/'.$post['file_id']);
 					}
-					else	//if (isset($post['write']))
+					elseif (isset($post['write']))
 					{
 						$ret = $this->write($post['file_id']);
 
@@ -84,6 +85,15 @@ class Translator_Controller extends Admin_Controller
 							$errors[] = $ret;
 							$error = TRUE;
 						}
+					}
+					else
+					{
+						// set file status to XLT
+						$file = ORM::factory('file', $post['file_id']);
+						$file->status = _XLT_;
+
+						$file->save();
+						// TODO: show success message
 					}
 				}
 				else
@@ -123,8 +133,6 @@ class Translator_Controller extends Admin_Controller
 			// skip on POST error
 			if (! $error)
 			{
-				$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
-
 				if ($status)
 				{
 					$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
@@ -239,11 +247,6 @@ class Translator_Controller extends Admin_Controller
 
 		$ids_syn = $ids_upd = $file_new = $file_upd = $sql = array();
 
-		// set ALL file status to DEL in db
-		$query = 'UPDATE '.$this->table_prefix.'i18n_file SET status = '._DEL_;
-		// need to check return status on db operations?
-		$ret = Database::instance()->query($query);
-
 		// get filesystem file info
 		foreach ($file_list as $not_used => $full_path)
 		{
@@ -277,17 +280,25 @@ class Translator_Controller extends Admin_Controller
 			}
 		}
 
-		// not modified, set file status back to SYN 
-		if (!empty($ids_syn))
+		// All modified, set file status to DEL first, status update below
+		if (empty($ids_syn))
 		{
-			$ids = (count($ids_syn) > 1) 
-				? "in (".implode(",", $ids_syn).")"
-				: "= ".implode(",", $ids_syn);
-			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET `status` = %d WHERE `id` %s", 
-							 _SYN_, $ids);
+			// set ALL file status to DEL in db
+			$query = 'UPDATE '.$this->table_prefix.'i18n_file SET status = '._DEL_;
 			// need to check return status on db operations?
 			$ret = Database::instance()->query($query);
 		}
+		else	// Set file status to DEL except not modified, status update below
+		{
+			$ids = (count($ids_syn) > 1) 
+				? "NOT in (".implode(",", $ids_syn).")"
+				: "!= ".implode(",", $ids_syn);
+			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET `status` = %d WHERE `id` %s", 
+							 _DEL_, $ids);
+			// need to check return status on db operations?
+			$ret = Database::instance()->query($query);
+		}
+
 		// modified, set file status to UPD 
 		if (!empty($ids_upd))
 		{
@@ -313,6 +324,7 @@ class Translator_Controller extends Admin_Controller
 		// new, import file
 		if (!empty($file_new))
 		{
+			// set file status to NEW
 			$this->import_locale($file_new);
 		}
 
@@ -326,6 +338,7 @@ class Translator_Controller extends Admin_Controller
 								 $rel_path);
 				$file = ORM::factory('file')->where(array('path' => $path, 'filename' => $filename))->find();
 				// process file data
+				// FIXME: set file status to UPD
 				$this->import_data($file->id, $rel_path, _UPD_);
 			}
 		}
