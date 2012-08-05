@@ -26,6 +26,9 @@
 	'set_new' => 'Set New',
 	// edit - controller
 	'err_load_key' => 'Key not in database or Key is source locale!',
+	'esc_single_quote' => 'Un-escaped single-quote character',
+	'input_value' => 'The input is: ',
+	'fix_single_quote' => 'Please prefix single-quote character with backslash character',
 	// main - template
 	'init_db' => 'This is the first time running <strong>Translator Tool</strong>',
 	'config_source' => 'Source locale: ',

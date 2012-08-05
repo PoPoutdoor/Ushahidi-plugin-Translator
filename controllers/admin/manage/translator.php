@@ -625,28 +625,44 @@ class Translator_Controller extends Admin_Controller
 
 					$value = $post[$locale];
 
-					// set key status
-					$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
-					if ($dat->loaded == TRUE AND $locale != $locales[0])
+					// check if unescaped single quote
+					$sq = strpos($value, "'");
+					if ($sq !== FALSE)
 					{
-						$db_text = unserialize($dat->text);
-
-						$db_text = (is_array($db_text))
-									? array_merge($db_text, array($post['subkey'] => $value))
-									: $value;
-						$dat->text = serialize($db_text);
-
-						if (isset($post['update']))	$dat->status = _SYN_;
-						if (isset($post['reset']))	$dat->status = _NEW_;
-
-						$dat->save();
-
-						url::redirect(url::current(TRUE) . '#key_' . $pos);
+						if (! $sq OR substr($value, $sq - 1, 2) != "\'")
+						{
+							$error = TRUE;
+							$errors[] = Kohana::lang('translator.esc_single_quote');
+							$errors[] = Kohana::lang('translator.input_value') . $value;
+							$errors[] = Kohana::lang('translator.fix_single_quote');
+						}
 					}
-					else
+
+					if (! $error)
 					{
-						$error = TRUE;
-						$errors[] = Kohana::lang('translator.err_load_key');
+						// set key status
+						$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
+						if ($dat->loaded == TRUE AND $locale != $locales[0])
+						{
+							$db_text = unserialize($dat->text);
+
+							$db_text = (is_array($db_text))
+										? array_merge($db_text, array($post['subkey'] => $value))
+										: $value;
+							$dat->text = serialize($db_text);
+
+							if (isset($post['update']))	$dat->status = _SYN_;
+							if (isset($post['reset']))	$dat->status = _NEW_;
+
+							$dat->save();
+
+							url::redirect(url::current(TRUE) . '#key_' . $pos);
+						}
+						else
+						{
+							$error = TRUE;
+							$errors[] = Kohana::lang('translator.err_load_key');
+						}
 					}
 				}
 				else
