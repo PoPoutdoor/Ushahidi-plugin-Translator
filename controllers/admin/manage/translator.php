@@ -31,13 +31,9 @@ class Translator_Controller extends Admin_Controller
 
 		// file/data status
 		define('_DEL_', 0);
-		define('_SYN_', 1);
+		define('_XLT_', 1);
 		define('_NEW_', 2);
 		define('_UPD_', 3);
-		// File status only
-		define('_XLT_', 4);
-//		define('APPROVED', 8);
-//		define('WIP', 16);
 	}
 
 	function index()
@@ -65,8 +61,8 @@ class Translator_Controller extends Admin_Controller
 			{
 				$post = new Validation($_POST);
 
-				// something wrong, just return
-				if (! isset($post['write']) AND ! isset($post['edit']) AND ! isset($post['update'])) return;
+				// something wrong, no action taken, just return
+				if (! isset($post['write']) AND ! isset($post['edit']) AND ! isset($post['xlat'])) return;
 
 				$post->add_rules('file_id', 'required', 'numeric');
 
@@ -86,11 +82,10 @@ class Translator_Controller extends Admin_Controller
 							$error = TRUE;
 						}
 					}
-					else
+					else	// set file status to NEW
 					{
-						// set file status to XLT
 						$file = ORM::factory('file', $post['file_id']);
-						$file->status = _XLT_;
+						$file->status = _NEW_;
 
 						$file->save();
 						// TODO: show success message
@@ -116,6 +111,7 @@ class Translator_Controller extends Admin_Controller
 
 					$this->import_locale($lang_files);
 				}
+				// TODO: move to data management button
 				else
 				{
 		/*			// Kohana internal cache issue, no clear internal cache method		
@@ -269,7 +265,7 @@ class Translator_Controller extends Admin_Controller
 				}
 				else
 				{
-					// set status to SYN
+					// not modified, keep status
 					$ids_syn[] = $file->id;
 				}
 			}
@@ -319,8 +315,9 @@ class Translator_Controller extends Admin_Controller
 		}
 
 		/*
-			TODO: need code to handle renamed(add/del with most keys match) files?
+			NOTE: need code to handle renamed(add/del with most keys match) files? Insert here!
 		*/
+
 		// new, import file
 		if (!empty($file_new))
 		{
@@ -338,7 +335,6 @@ class Translator_Controller extends Admin_Controller
 								 $rel_path);
 				$file = ORM::factory('file')->where(array('path' => $path, 'filename' => $filename))->find();
 				// process file data
-				// FIXME: set file status to UPD
 				$this->import_data($file->id, $rel_path, _UPD_);
 			}
 		}
@@ -367,7 +363,7 @@ class Translator_Controller extends Admin_Controller
 	*
 	*  @parm $fid: 	int file id
 	*  @parm $file:	string file's related path
-	*  @parm $status:	int _NEW_ or _UPD_
+	*  @parm $status:	constant _NEW_ or _UPD_
 	*/
 	public function import_data($fid, $file, $status = _NEW_)
 	{
@@ -501,15 +497,6 @@ class Translator_Controller extends Admin_Controller
 					$values[] = sprintf($values_template, $fid, $locale, $key,
 								 $db->escape_str(serialize($lang[$key])), _NEW_);
 				}
-				elseif ($status == _UPD_)
-				{
-					$updates[] = "UPDATE ".$this->table_prefix."i18n_data 
-								SET `status` = "._SYN_." 
-								WHERE (`file_id` = '".$fid."' 
-									AND `locale` = '".$locale."' 
-									AND `key` = '".$key."')";
-				}
-
 			}
 
 			if (!empty($del))
@@ -558,7 +545,6 @@ class Translator_Controller extends Admin_Controller
 
 	/**
 	* TODO: add Google translation support
-	* Edit file with all configured locales
 	*
 	* @param int $id The file id 
 	*/
@@ -578,6 +564,7 @@ class Translator_Controller extends Admin_Controller
 		$file_info = '';
 
 		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+
 		$locales = Kohana::config('translator.locales');
 
 		if ($_POST)
@@ -585,7 +572,7 @@ class Translator_Controller extends Admin_Controller
 			$post = new Validation($_POST);
 
 			// something wrong, just return
-			if (! isset($post['update']) AND ! isset($post['reset']) AND ! isset($post['file'])) return;
+			if (! isset($post['xlat']) AND ! isset($post['reset']) AND ! isset($post['file'])) return;
 
 			if (isset($post['file']))
 			{
@@ -612,6 +599,9 @@ class Translator_Controller extends Admin_Controller
 			}
 			else
 			{
+				// NOTE: not handle source keys
+				//unset($locales[0]);
+
 				$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
 				$post->add_rules('key', 'required', 'numeric');
 				$post->add_rules('pos', 'required', 'numeric');
@@ -623,46 +613,55 @@ class Translator_Controller extends Admin_Controller
 					$key_id = $post['key'];
 					$pos = $post['pos'];
 
-					$value = $post[$locale];
+					$value = trim($post[$locale]);
 
-					// check if unescaped single quote
-					$sq = strpos($value, "'");
-					if ($sq !== FALSE)
+					$blank = (empty($value)) ? TRUE : FALSE;
+					if (! $blank)
 					{
-						if (! $sq OR substr($value, $sq - 1, 2) != "\'")
+						// check if unescaped single quote
+						$sq = strpos($value, "'");
+						if ($sq !== FALSE)
 						{
-							$error = TRUE;
-							$errors[] = Kohana::lang('translator.esc_single_quote');
-							$errors[] = Kohana::lang('translator.input_value') . $value;
-							$errors[] = Kohana::lang('translator.fix_single_quote');
+							if (! $sq OR substr($value, $sq - 1, 2) != "\'")
+							{
+								$error = TRUE;
+								$errors[] = Kohana::lang('translator.esc_single_quote');
+								$errors[] = Kohana::lang('translator.fix_single_quote');
+								$errors[] = Kohana::lang('translator.input_value') . $value;
+							}
+						}
+
+						if (! $error)
+						{
+							// set key status
+							$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
+							if ($dat->loaded == TRUE)
+							{
+								$db_text = unserialize($dat->text);
+
+								$db_text = (is_array($db_text))
+											? array_merge($db_text, array($post['subkey'] => $value))
+											: $value;
+								$dat->text = serialize($db_text);
+
+								if (isset($post['xlat']))	$dat->status = _XLT_;
+								if (isset($post['reset']))	$dat->status = _NEW_;
+
+								$dat->save();
+
+								url::redirect(url::current(TRUE) . '#key_' . $pos);
+							}
+							else
+							{
+								$error = TRUE;
+								$errors[] = Kohana::lang('translator.err_load_key');
+							}
 						}
 					}
-
-					if (! $error)
+					else
 					{
-						// set key status
-						$dat = ORM::factory('data')->where('locale', $locale)->find($key_id);
-						if ($dat->loaded == TRUE AND $locale != $locales[0])
-						{
-							$db_text = unserialize($dat->text);
-
-							$db_text = (is_array($db_text))
-										? array_merge($db_text, array($post['subkey'] => $value))
-										: $value;
-							$dat->text = serialize($db_text);
-
-							if (isset($post['update']))	$dat->status = _SYN_;
-							if (isset($post['reset']))	$dat->status = _NEW_;
-
-							$dat->save();
-
-							url::redirect(url::current(TRUE) . '#key_' . $pos);
-						}
-						else
-						{
-							$error = TRUE;
-							$errors[] = Kohana::lang('translator.err_load_key');
-						}
+						$error = TRUE;
+						$errors[] = Kohana::lang('translator.input_blank');
 					}
 				}
 				else
@@ -681,7 +680,7 @@ class Translator_Controller extends Admin_Controller
 			$last_key = '';
 			$arr = $lists = $show = array();
 
-			$key_state = (!$status OR ($status == _SYN_)) ? TRUE : FALSE;
+			$key_state = (!$status OR ($status == _XLT_)) ? TRUE : FALSE;
 			// pack data
 			foreach ($file_data as $dat)
 			{
@@ -707,7 +706,7 @@ class Translator_Controller extends Admin_Controller
 				}
 				elseif ($key != $last_key)
 				{
-					if ($status == _SYN_)
+					if ($status == _XLT_)
 					{
 						$logic = '$display = ($key_state AND '.implode(" AND ", $show).') ? TRUE : FALSE;';
 					}
@@ -723,10 +722,7 @@ class Translator_Controller extends Admin_Controller
 					$show = array();
 				}
 
-				if ($dat->locale != $locales[0])
-				{
-					$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
-				}
+				$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
 
 				$last_key = $key;
 			}
@@ -781,7 +777,7 @@ class Translator_Controller extends Admin_Controller
 
 			// get key=>text from db
 			$out = '';
-			$dat = ORM::factory('data')->where(array('file_id' => $id, 'locale' => $locale, 'status' => _SYN_))->orderby('key', 'asc')->select_list('key', 'text');
+			$dat = ORM::factory('data')->where(array('file_id' => $id, 'locale' => $locale, 'status' => _XLT_))->orderby('key', 'asc')->select_list('key', 'text');
 			foreach ($dat as $key => $val)
 			{
 				$text = unserialize($val);

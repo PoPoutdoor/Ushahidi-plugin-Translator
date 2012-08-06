@@ -61,7 +61,7 @@
 					<div class="tab">
 						<ul>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
-							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
+							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_xlt');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _UPD_ ?>" class="state_<?php echo _UPD_;?>"><?php echo Kohana::lang('translator.status_upd');?></a></li>
 						</ul>
@@ -107,8 +107,15 @@
 
 								if ($hr)  echo '<tr><td colspan="4"><hr /></td></tr>';
 								$all_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id))->count_all();
-								$xlat_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id, 'status' => _SYN_))->count_all();
+								$xlat_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id, 'status' => _XLT_))->count_all();
 								$progress = intval(floor(($xlat_keys / $all_keys)*100));
+								// update file status if 100% translated
+								if ($progress == 100)
+								{
+									$file = ORM::factory('file', $file->id);
+									$file->status = _XLT_;
+									$file->save();
+								}
 								$progress .= '%';
 						?>
 							<tr>
@@ -128,7 +135,7 @@
 								<td class="rhs">
 						<?php print form::open(); ?>
 									<input type="hidden" name="file_id" id="button" value="<?php echo $file->id; ?>">
-									<input type="submit" name="update" id="button" value="<?php echo Kohana::lang('translator.update');?>">&nbsp;
+									<input type="submit" name="xlat" id="button" value="<?php echo Kohana::lang('translator.set_new');?>">&nbsp;
 									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">&nbsp;
 									<input type="submit" name="write" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
 						<?php print form::close(); ?>

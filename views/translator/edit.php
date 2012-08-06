@@ -42,7 +42,7 @@
 					<div class="tab">
 						<ul>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' .$file_id ?>"><?php echo Kohana::lang('translator.status_all');?></a></li>
-							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _SYN_ ?>" class="state_<?php echo _SYN_;?>"><?php echo Kohana::lang('translator.status_syn');?></a></li>
+							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_xlt');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _UPD_ ?>" class="state_<?php echo _UPD_;?>"><?php echo Kohana::lang('translator.status_upd');?></a></li>
 						</ul>
@@ -67,7 +67,7 @@
 					<table class="xlat">
 						<thead>
 							<tr>
-								<th>&nbsp;<?php echo Kohana::lang('translator.locale_key');?></th>
+								<th>&nbsp;<?php echo Kohana::lang('translator.key');?></th>
 								<th><?php echo Kohana::lang('translator.locale');?></th>
 								<th><?php echo Kohana::lang('translator.text');?></th>
 								<th class="action"><?php echo Kohana::lang('translator.actions');?></th>
@@ -96,7 +96,7 @@
 
 	$pos = 0;
 	$css = ' cols="50"';
-	$action = '<input type="submit" name="update" id="button" value="'.Kohana::lang('translator.update').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
+	$action = '<input type="submit" name="xlat" id="button" value="'.Kohana::lang('translator.set_xlat').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
 
 	foreach ($key_list as $key => $val)
 	{

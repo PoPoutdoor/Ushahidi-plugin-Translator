@@ -84,7 +84,7 @@ textarea.state_1:focus {
 	border: 2px dotted #A60003;
 }
 
-.tab ul li a.state_1, .tab ul li a.state_4, textarea.state_1 {
+.tab ul li a.state_1, textarea.state_1 {
 	background-color: #A2F7A7;
 }
 
