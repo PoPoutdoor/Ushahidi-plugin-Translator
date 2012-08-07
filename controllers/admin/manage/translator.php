@@ -722,7 +722,10 @@ class Translator_Controller extends Admin_Controller
 					$show = array();
 				}
 
-				$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
+		        if ($dat->locale != $locales[0])
+		        {
+        			$show[] = ($state == $status) ? 'TRUE' : 'FALSE';
+        		}
 
 				$last_key = $key;
 			}

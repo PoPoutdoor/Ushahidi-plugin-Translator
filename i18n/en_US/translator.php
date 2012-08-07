@@ -16,7 +16,7 @@
 	// edit - template
 	'experimental' => 'Experimental',
 	'experimental_warn' => 'This is an experimental feature. The author cannot be <br/>responsible for any mishaps, bugs or quirks that show up when using Translator.',
-	'go_index' => 'Go back to main page.',
+//	'go_index' => 'Go back to main page.',
 	'key' => 'Key',
 	'locale' => 'Locale',
 	'text' => 'Text',

@@ -46,10 +46,7 @@
 					</ul>
 				</div>
 				<?php endif; ?>
-				<?php if (! is_object($files)): ?>
-					<br /><br />
-					<h3 class="action"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.go_index'); ?></a></h3>
-				<?php else: ?>
+				<?php if (is_object($files)): ?>
 				<!-- tabs -->
 				<div class="tabs">
 					<!-- tabset -->
