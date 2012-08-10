@@ -35,7 +35,7 @@
 				<div class="tabs">
 					<!-- tabset -->
 					<ul class="tabset">
-						<li><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
+						<li><a href="<?php echo url::site() . 'admin/manage/translator' . $search ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
 						<li><a href="#" class="active"><?php echo Kohana::lang('translator.edit');?></a></li>
 					</ul>
 					<!-- tab -->
@@ -45,6 +45,13 @@
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_xlt');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file_id .'?view='. _UPD_ ?>" class="state_<?php echo _UPD_;?>"><?php echo Kohana::lang('translator.status_upd');?></a></li>
+				<?php print form::open(NULL, array('method'=>'get')); ?>
+							<li class="rhs">
+								<?php 
+									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit('', Kohana::lang('translator.search'));
+								?>
+							</li>
+				<?php print form::close(); ?>
 						</ul>
 					</div>
 				</div>

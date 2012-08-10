@@ -43,6 +43,7 @@ class Translator_Controller extends Admin_Controller
 
 		$error = $first_run = $file_count = FALSE;
 		$errors = $files = array();
+		$query = '';
 
 		// check config and setup local vars
 		$error = $this->check_config();
@@ -70,7 +71,9 @@ class Translator_Controller extends Admin_Controller
 				{
 					if (isset($post['edit']))
 					{
-						url::redirect('admin/manage/translator/edit/'.$post['file_id']);
+						// pass search keyword
+						$query = (isset($_GET['search'])) ? '?search=' . (string) $_GET['search'] : '';
+						url::redirect('admin/manage/translator/edit/'.$post['file_id'] . $query);
 					}
 					elseif (isset($post['write']))
 					{
@@ -97,7 +100,7 @@ class Translator_Controller extends Admin_Controller
 					$error = TRUE;
 				}
 			}
-			else
+			elseif (! isset($_GET['search']))
 			{
 				$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
 
@@ -126,19 +129,47 @@ class Translator_Controller extends Admin_Controller
 				}
 			}
 
-			// skip on POST error
-			if (! $error)
+			// search
+			if (isset($_GET['search']))
 			{
-				if ($status)
+				$keyword = array();
+
+				// Database instance
+				$db = new Database();
+
+				$sql = "SELECT file_id FROM ".$this->table_prefix."i18n_data 
+							WHERE ";
+				$sql .= (isset($_GET['mode'])) ? '`key`' : 'text';
+				$sql .= " LIKE '%" . $db->escape_str($_GET['search']) . "%'";
+
+				// need to check return status on db operations?
+				$result = Database::instance()->query($sql);
+				foreach ($result as $search)
 				{
-					$files = ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-					$file_count = ORM::factory('file')->where('status', $status)->count_all();
+					$keyword[] = $search->file_id;
+				}
+		
+				if (! empty($keyword))
+				{
+					$sql = "SELECT * FROM ".$this->table_prefix."i18n_file 
+								WHERE (id IN (" . implode(",", $keyword) . "))
+								ORDER BY path, filename";
+					$files = Database::instance()->query($sql);
+					$query = '?search=' . $db->escape_str($_GET['search']);
 				}
 				else
 				{
-					$files = ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
-					$file_count = ORM::factory('file')->count_all();
+					$error = TRUE;
+					$errors[] = Kohana::lang('translator.no_search_result');
 				}
+			}
+
+			// skip on POST error and search
+			if (! $error AND ! isset($_GET['search']))
+			{
+				$files = ($status)
+					? ORM::factory('file')->where('status', $status)->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all()
+					: ORM::factory('file')->orderby(array('path' => 'asc', 'filename' => 'asc'))->find_all();
 			}
 		}
 
@@ -146,7 +177,8 @@ class Translator_Controller extends Admin_Controller
 		$this->template->content->errors = $errors;
 		$this->template->content->init_db = $first_run;
 		$this->template->content->files = $files;
-		$this->template->content->total = $file_count;
+		$this->template->content->total = $files->count();
+		$this->template->content->search = $query;
 	}
 
 	/*
@@ -561,9 +593,7 @@ class Translator_Controller extends Admin_Controller
 
 		$error = FALSE;
 		$errors = $lists = array();
-		$file_info = '';
-
-		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+		$file_info = $query = '';
 
 		$locales = Kohana::config('translator.locales');
 
@@ -572,7 +602,7 @@ class Translator_Controller extends Admin_Controller
 			$post = new Validation($_POST);
 
 			// something wrong, just return
-			if (! isset($post['xlat']) AND ! isset($post['reset']) AND ! isset($post['file'])) return;
+			if (! isset($post['xlat']) AND ! isset($post['reset']) AND ! isset($post['file']))  return;
 
 			if (isset($post['file']))
 			{
@@ -582,7 +612,7 @@ class Translator_Controller extends Admin_Controller
 					$ret = $this->write($post['file']);
 					if (is_null($ret))
 					{
-						// TODO: write success messages handled by index() or just show here without redirect?		
+						// NOTE: write success messages handled by index() or just show here without redirect?		
 						url::redirect('admin/manage/translator#file_'.(int) $post['file']);
 					}
 					else
@@ -599,9 +629,6 @@ class Translator_Controller extends Admin_Controller
 			}
 			else
 			{
-				// NOTE: not handle source keys
-				//unset($locales[0]);
-
 				$post->add_rules('locale', 'required', 'in_array['.implode(",", $locales).']');
 				$post->add_rules('key', 'required', 'numeric');
 				$post->add_rules('pos', 'required', 'numeric');
@@ -672,10 +699,53 @@ class Translator_Controller extends Admin_Controller
 			}
 		}
 
+		// search
+		if (isset($_GET['search']))
+		{
+			$keyword = array();
+			$query = '';
+
+			// Database instance
+			$db = new Database();
+
+			$sql = "SELECT `key` FROM ".$this->table_prefix."i18n_data 
+						WHERE (file_id = $id 
+							AND ";
+			$sql .= (isset($_GET['mode'])) ? '`key`' : 'text';
+			$sql .= " LIKE '%" . $db->escape_str($_GET['search']) . "%')";
+
+			// need to check return status on db operations?
+			$result = Database::instance()->query($sql);
+			foreach ($result as $search)
+			{
+				$keyword[] = $search->key;
+			}
+			
+			if (! empty($keyword))
+			{
+				$query .= implode("','", $keyword);
+				$sql = "SELECT * FROM ".$this->table_prefix."i18n_data 
+							WHERE (file_id = $id 
+								AND `key` IN ('" . $query . "'))
+							ORDER BY `key`, id";
+				$file_data = Database::instance()->query($sql);
+			}
+			else
+			{
+				$error = TRUE;
+				$errors[] = Kohana::lang('translator.no_search_result');
+			}
+		}
+
+		$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+
 		if (! $error)
 		{
 			// generate key list
-			$file_data = ORM::factory('data')->where('file_id', $id)->orderby(array('key' => 'asc', 'id' => 'asc'))->find_all();
+			if (! isset($_GET['search']))
+			{
+				$file_data = ORM::factory('data')->where('file_id', $id)->orderby(array('key' => 'asc', 'id' => 'asc'))->find_all();
+			}
 
 			$last_key = '';
 			$arr = $lists = $show = array();
@@ -735,6 +805,18 @@ class Translator_Controller extends Admin_Controller
 			// get file info
 			$file = ORM::factory('file', $id);
 			$file_info = $file->path.' -> '.$file->filename;
+
+			if (isset($_GET['search']))
+			{
+				$mode = (isset($_GET['mode'])) 
+					? Kohana::lang('translator.search_key') 
+					: Kohana::lang('translator.search_text');
+
+				$file_info .= ' :: ' . $mode . ' ';
+				$file_info .= "'" . (string) $_GET['search'] . "'";
+
+				$query = '?search=' . (string) $_GET['search'];
+			}
 		}
 
 		// template
@@ -742,6 +824,7 @@ class Translator_Controller extends Admin_Controller
 		$this->template->content->errors = $errors;
 		$this->template->content->file_id = $id;
 		$this->template->content->status = $status;
+		$this->template->content->search = $query;
 		$this->template->content->file_info = $file_info;
 		$this->template->content->key_list = $lists;
 	}
@@ -834,6 +917,7 @@ class Translator_Controller extends Admin_Controller
 
 		return;
 	}
+
 
 }
 

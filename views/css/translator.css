@@ -27,6 +27,7 @@
 
 .rhs, .tab ul li.rhs {
 	float: right;
+	vertical-align: baseline;
 }
 
 .file {
@@ -55,6 +56,7 @@
 	font-weight: bold;
 	text-decoration: none;
 	padding: 1px;
+	vertical-align: text-bottom;
 }
 
 textarea.ro, textarea.state_1, textarea.state_2, textarea.state_3 {

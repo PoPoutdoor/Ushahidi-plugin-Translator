@@ -61,6 +61,13 @@
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _XLT_ ?>" class="state_<?php echo _XLT_;?>"><?php echo Kohana::lang('translator.status_xlt');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _NEW_ ?>" class="state_<?php echo _NEW_;?>"><?php echo Kohana::lang('translator.status_new');?></a></li>
 							<li><a href="<?php echo url::site() . 'admin/manage/translator?view='. _UPD_ ?>" class="state_<?php echo _UPD_;?>"><?php echo Kohana::lang('translator.status_upd');?></a></li>
+				<?php print form::open(NULL, array('method'=>'get')); ?>
+							<li class="rhs">
+								<?php 
+									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit('', Kohana::lang('translator.search'));
+								?>
+							</li>
+				<?php print form::close(); ?>
 						</ul>
 					</div>
 				</div>
@@ -127,7 +134,7 @@
 									</div>
 								</td>
 								<td class="file">
-									<a name="file_<?php echo $file->id;?>" href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file->id; ?>"><?php echo $file->filename; ?></a>
+									<a name="file_<?php echo $file->id;?>" href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file->id . $search; ?>"><?php echo $file->filename; ?></a>
 								</td>
 								<td class="rhs">
 						<?php print form::open(); ?>

@@ -10,6 +10,7 @@
 	'edit' => 'Edit',
 	'file_list' => 'File list',
 	'no_result' => 'No Result',
+	'no_search_result' => 'Search return no result',
 	'set_new' => 'Set New',
 	'write_file' => 'Write',
 	'go_top' => 'TOP',
@@ -25,6 +26,10 @@
 	'view_1' => 'Show translated target(s) entries',
 	'view_2' => 'Show new entries',
 	'view_3' => 'Show modified entries related to source changes',
+	'search' => 'Search',
+	// search template
+	'search_text' => 'search content ',
+	'search_key' => 'search key ',
 	// edit - controller
 	'err_load_key' => 'Key not in database!',
 	'esc_single_quote' => 'Single-quote character not escaped',
