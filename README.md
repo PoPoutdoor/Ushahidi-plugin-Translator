@@ -45,4 +45,5 @@ Change log
 ----------
 2012-07-21 Initial release.
 2012-07-24 Update README.md and readme.txt.
+2012-08-12 Code completed for v0.1.
 
