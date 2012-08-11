@@ -102,7 +102,6 @@
 	$locales = Kohana::config('translator.locales');
 
 	$pos = 0;
-	$css = ' cols="50"';
 	$action = '<input type="submit" name="xlat" id="button" value="'.Kohana::lang('translator.set_xlat').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
 
 	foreach ($key_list as $key => $val)
@@ -112,6 +111,7 @@
 			if (in_array($lang_key, $locales))
 			{
 				$id = key($text);
+				$css = ' cols="50" onClick="this.style.height=' . ceil(strlen($text[$id]) / 50 * 1.2) . ' + \'em\';"';
 				if ($lang_key == $locales[0])
 				{
 					$show = $key;
@@ -146,6 +146,7 @@
 				foreach($text as $locale => $text2)
 				{
 					$id = key($text2);
+					$css = ' cols="50" onClick="this.style.height=' . ceil(strlen($text2[$id]) / 50 * 1.2) . ' + \'em\';"';
 					if ($locale == $locales[0])
 					{
 						$show = $key.'<br />&nbsp;&nbsp;&nbsp;&nbsp;=>&nbsp;&nbsp;'.$lang_key;

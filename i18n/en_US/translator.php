@@ -14,6 +14,8 @@
 	'set_new' => 'Set New',
 	'write_file' => 'Write',
 	'go_top' => 'TOP',
+	'search_text' => 'search content ',
+	'search_key' => 'search key ',
 	// edit - template
 	'experimental' => 'Experimental',
 	'experimental_warn' => 'This is an experimental feature. The author cannot be <br/>responsible for any mishaps, bugs or quirks that show up when using Translator.',
@@ -27,9 +29,6 @@
 	'view_2' => 'Show new entries',
 	'view_3' => 'Show modified entries related to source changes',
 	'search' => 'Search',
-	// search template
-	'search_text' => 'search content ',
-	'search_key' => 'search key ',
 	// edit - controller
 	'err_load_key' => 'Key not in database!',
 	'esc_single_quote' => 'Single-quote character not escaped',
