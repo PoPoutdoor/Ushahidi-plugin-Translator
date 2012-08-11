@@ -48,7 +48,7 @@
 				<?php print form::open(NULL, array('method'=>'get')); ?>
 							<li class="rhs">
 								<?php 
-									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit('', Kohana::lang('translator.search'));
+									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit(array('name' => '', 'id' => 'button'), Kohana::lang('translator.search'));
 								?>
 							</li>
 				<?php print form::close(); ?>
@@ -57,12 +57,13 @@
 				</div>
 				<div class="head">
 					<h3 class="info"><?php echo $file_info;?></h3>
-				<?php print form::open(); ?>
 					<span class="rhs">
-						<input type="hidden" name="file" id="file" value="<?php echo $file_id; ?>">
-						<input type="submit" name="button" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
+				<?php 
+					print form::open(NULL, array(), array('file' => $file_id))
+						. form::submit(array('name' => '', 'id' => 'button'), Kohana::lang('translator.write_file'))
+						. form::close(); 
+				?>
 					</span>
-				<?php print form::close(); ?>
 				</div>
 				<!-- green-box -->
 				<?php if ($status):?>
@@ -102,7 +103,9 @@
 	$locales = Kohana::config('translator.locales');
 
 	$pos = 0;
-	$action = '<input type="submit" name="xlat" id="button" value="'.Kohana::lang('translator.set_xlat').'" />&nbsp;<input type="submit" name="reset" id="button" value="'.Kohana::lang('translator.set_new').'" />';
+	$css = ' cols="50" ';
+	$action = form::submit(array('name' => 'xlat', 'id' => 'button'), Kohana::lang('translator.set_xlat')) . '&nbsp;'
+		. form::submit(array('name' => 'reset', 'id' => 'button'), Kohana::lang('translator.set_new'));
 
 	foreach ($key_list as $key => $val)
 	{
@@ -111,7 +114,10 @@
 			if (in_array($lang_key, $locales))
 			{
 				$id = key($text);
-				$css = ' cols="50" onClick="this.style.height=' . ceil(strlen($text[$id]) / 50 * 1.2) . ' + \'em\';"';
+
+				$height = ceil(strlen($text[$id]) / 50) * 1.2;
+				if ($height != 0)  $css .= 'onClick="this.style.height=' . $height . ' + \'em\';"';
+
 				if ($lang_key == $locales[0])
 				{
 					$show = $key;
@@ -125,19 +131,15 @@
 					$actions = $action;
 				}
 ?>
-<?php print form::open(); ?>
 						<tr>
 							<td>
 								&nbsp;<?php echo $show; ?>
-								<input type="hidden" name="key" id="key" value="<?php echo $id; ?>">
-								<input type="hidden" name="locale" id="locale" value="<?php echo $lang_key; ?>">
-								<input type="hidden" name="pos" id="pos" value="<?php echo $pos; ?>">
 							</td>
 							<td class="locale"><?php echo $lang_key; ?></td>
+<?php print form::open(NULL, array(), array('key' => $id, 'locale' => $lang_key, 'pos' => $pos)); ?>
 							<td><?php print form::textarea($lang_key, $text[$id], $style); ?></td>
-							<td class="rhs"><?php echo $actions; ?></td>
+							<td class="rhs"><?php echo $actions . form::close('</td>'); ?>
 						</tr>
-<?php print form::close(); ?>
 <?php
 			}
 			else
@@ -146,7 +148,10 @@
 				foreach($text as $locale => $text2)
 				{
 					$id = key($text2);
-					$css = ' cols="50" onClick="this.style.height=' . ceil(strlen($text2[$id]) / 50 * 1.2) . ' + \'em\';"';
+
+					$height = ceil(strlen($text2[$id]) / 50) * 1.2;
+					if ($height != 0) $css .= 'onClick="this.style.height=' . $height . ' + \'em\';"';
+
 					if ($locale == $locales[0])
 					{
 						$show = $key.'<br />&nbsp;&nbsp;&nbsp;&nbsp;=>&nbsp;&nbsp;'.$lang_key;
@@ -160,20 +165,15 @@
 						$actions = $action;
 					}
 ?>
-<?php print form::open(); ?>
 						<tr>
 							<td>
 								&nbsp;<?php echo $show; ?>
-								<input type="hidden" name="key" id="key" value="<?php echo $id; ?>">
-								<input type="hidden" name="subkey" id="subkey" value="<?php echo $lang_key; ?>">
-								<input type="hidden" name="locale" id="locale" value="<?php echo $locale; ?>">
-								<input type="hidden" name="pos" id="pos" value="<?php echo $pos; ?>">
 							</td>
 							<td class="locale"><?php echo $locale; ?></td>
+<?php print form::open(NULL, array(), array('key' => $id, 'subkey' => $lang_key, 'locale' => $locale, 'pos' => $pos)); ?>
 							<td><?php print form::textarea($locale, $text2[$id], $style); ?></td>
-							<td class="rhs"><?php echo $actions; ?></td>
+							<td class="rhs"><?php echo $actions . form::close('</td>'); ?>
 						</tr>
-<?php print form::close(); ?>
 <?php
 				}
 			}

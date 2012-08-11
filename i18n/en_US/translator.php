@@ -19,7 +19,6 @@
 	// edit - template
 	'experimental' => 'Experimental',
 	'experimental_warn' => 'This is an experimental feature. The author cannot be <br/>responsible for any mishaps, bugs or quirks that show up when using Translator.',
-//	'go_index' => 'Go back to main page.',
 	'key' => 'Key',
 	'locale' => 'Locale',
 	'text' => 'Text',
@@ -41,12 +40,12 @@
 	'config_target' => 'Target locale: ',
 	'folder' => 'Folder',
 	'file' => 'File',
-	'file_count' => ' language files',
+	'num_files' => ' language files',
 	// main - controller
 	'source_error' => 'Config file error: <strong>Source locale is not set!</strong>',
 	'target_error' => 'Config file error: <strong>Target locale is not set!</strong>',
 	'not_writable' => ' must be writable',
-//	'write_error' => 'Write error on file ',
+	// 'write_error' => 'Write error on file ',
 	'progress' => 'Progress',
 	'not_write_empty' => 'Not writing empty file!',
 	);

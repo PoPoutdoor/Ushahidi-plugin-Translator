@@ -64,7 +64,7 @@
 				<?php print form::open(NULL, array('method'=>'get')); ?>
 							<li class="rhs">
 								<?php 
-									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit('', Kohana::lang('translator.search'));
+									print form::input('search', '') . form::checkbox('mode', 'key') . form::label('key', Kohana::lang('translator.key')) . '&nbsp;' . form::submit(array('name' => '', 'id' => 'button'), Kohana::lang('translator.search'));
 								?>
 							</li>
 				<?php print form::close(); ?>
@@ -82,17 +82,17 @@
 								<th class="action"><?php echo Kohana::lang('translator.actions');?></th>
 							</tr>
 						</thead>
-						<?php if ($total): ?>
+						<?php if (count($files)): ?>
 						<tfoot>
 							<tr class="foot">
 								<td colspan="4" class="action">
-									<strong><?php echo $total.Kohana::lang('translator.file_count'); ?></strong>
+									<strong><?php echo count($files).Kohana::lang('translator.num_files'); ?></strong>
 								</td>
 							</tr>
 						</tfoot>
 						<?php endif; ?>
 						<tbody>
-						<?php if ($total == 0): ?>
+						<?php if (! count($files)): ?>
 							<tr><td colspan="4"><hr /></td></tr>
 							<tr>
 								<td colspan="4" class="action">
@@ -137,12 +137,13 @@
 									<a name="file_<?php echo $file->id;?>" href="<?php echo url::site() . 'admin/manage/translator/edit/' . $file->id . $search; ?>"><?php echo $file->filename; ?></a>
 								</td>
 								<td class="rhs">
-						<?php print form::open(); ?>
-									<input type="hidden" name="file_id" id="button" value="<?php echo $file->id; ?>">
-									<input type="submit" name="xlat" id="button" value="<?php echo Kohana::lang('translator.set_new');?>">&nbsp;
-									<input type="submit" name="edit" id="button" value="<?php echo Kohana::lang('translator.edit');?>">&nbsp;
-									<input type="submit" name="write" id="button" value="<?php echo Kohana::lang('translator.write_file');?>">
-						<?php print form::close(); ?>
+						<?php 
+							print form::open(NULL, array(), array('file_id' => $file->id));
+							print form::submit(array('name' => 'xlat', 'id' => 'button'), Kohana::lang('translator.set_new')) . '&nbsp;'
+								. form::submit(array('name' => 'edit', 'id' => 'button'), Kohana::lang('translator.edit')) . '&nbsp;'
+								. form::submit(array('name' => 'write', 'id' => 'button'), Kohana::lang('translator.write_file'));
+							print form::close(); 
+						?>
 								</td>
 							</tr>
 						<?php

@@ -59,6 +59,15 @@
 	vertical-align: bottom;
 }
 
+.tab ul li.rhs label, .tab ul li.rhs input {
+	vertical-align: bottom;
+}
+
+.tab ul li.rhs input#button {
+	margin-top: -8px;
+	vertical-align: text-bottom;
+}
+
 textarea.ro, textarea.state_1, textarea.state_2, textarea.state_3 {
 	border: 2px solid #D9D9D9;
 	float: left;
@@ -68,6 +77,7 @@ textarea.ro, textarea.state_1, textarea.state_2, textarea.state_3 {
 	padding: 3px;
 	font-family: "Courier New",Courier,monospace;
 	font-size: 1.1em;
+/*	vertical-align: middle;	*/
 }
 
 textarea:focus {

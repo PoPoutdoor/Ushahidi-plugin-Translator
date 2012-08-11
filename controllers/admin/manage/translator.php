@@ -41,7 +41,7 @@ class Translator_Controller extends Admin_Controller
 		$this->template->content = new View('translator/main');
 		$this->template->content->title = Kohana::lang('translator.translator');
 
-		$error = $first_run = $file_count = FALSE;
+		$error = $first_run = FALSE;
 		$errors = $files = array();
 		$query = '';
 
@@ -114,16 +114,16 @@ class Translator_Controller extends Admin_Controller
 
 					$this->import_locale($lang_files);
 				}
-				// TODO: move to data management button
+				// TODO: move to data management button/tab
 				else
 				{
-		/*			// Kohana internal cache issue, no clear internal cache method		
+				/*	// Kohana internal cache issue, no clear internal cache method		
 					if (is_file('application/cache/kohana_find_file_paths'))
 					{
 						unlink('application/cache/kohana_find_file_paths');
 						$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
 					}
-		*/
+				*/
 					// check source locale files for updates
 					$this->sync_locale($lang_files);
 				}
@@ -177,7 +177,6 @@ class Translator_Controller extends Admin_Controller
 		$this->template->content->errors = $errors;
 		$this->template->content->init_db = $first_run;
 		$this->template->content->files = $files;
-		$this->template->content->total = $files->count();
 		$this->template->content->search = $query;
 	}
 
@@ -231,7 +230,7 @@ class Translator_Controller extends Admin_Controller
 	{
 		$locales = Kohana::config('translator.locales');
 		$values_template = "('%s', '%s', '%s', %d)";
-		$query = sprintf("INSERT INTO %si18n_file (`path`, `filename`, `hash`, `status`) VALUES ", 
+		$query = sprintf("INSERT INTO %si18n_file (path, filename, hash, status) VALUES ", 
 							 $this->table_prefix);
 
 		$values = array();
@@ -271,7 +270,7 @@ class Translator_Controller extends Admin_Controller
 	public function sync_locale($file_list)
 	{
 		$locales = Kohana::config('translator.locales');
-		$update_hash = "UPDATE ".$this->table_prefix."i18n_file SET `hash` = '%s' WHERE `id` = %d";
+		$update_hash = "UPDATE ".$this->table_prefix."i18n_file SET hash = '%s' WHERE id = %d";
 
 		$ids_syn = $ids_upd = $file_new = $file_upd = $sql = array();
 
@@ -321,7 +320,7 @@ class Translator_Controller extends Admin_Controller
 			$ids = (count($ids_syn) > 1) 
 				? "NOT in (".implode(",", $ids_syn).")"
 				: "!= ".implode(",", $ids_syn);
-			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET `status` = %d WHERE `id` %s", 
+			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET status = %d WHERE id %s", 
 							 _DEL_, $ids);
 			// need to check return status on db operations?
 			$ret = Database::instance()->query($query);
@@ -333,7 +332,7 @@ class Translator_Controller extends Admin_Controller
 			$ids = (count($ids_upd) > 1) 
 				? "in (".implode(",", $ids_upd).")"
 				: "= ".implode(",", $ids_upd);
-			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET `status` = %d WHERE `id` %s", 
+			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET status = %d WHERE id %s", 
 							 _UPD_, $ids);
 			// need to check return status on db operations?
 			$ret = Database::instance()->query($query);
@@ -377,12 +376,12 @@ class Translator_Controller extends Admin_Controller
 		{
 			if ($file->loaded)
 			{
-				$query = "DELETE FROM ".$this->table_prefix."i18n_file WHERE `id` = ".$file->id;
+				$query = "DELETE FROM ".$this->table_prefix."i18n_file WHERE id = ".$file->id;
 				// need to check return status on db operations?
 				$ret = Database::instance()->query($query);
 
 				// delete data
-				$query = "DELETE FROM ".$this->table_prefix."i18n_data WHERE `file_id` = ".$file->id;
+				$query = "DELETE FROM ".$this->table_prefix."i18n_data WHERE file_id = ".$file->id;
 				// need to check return status on db operations?
 				$ret = Database::instance()->query($query);
 			}
@@ -403,7 +402,7 @@ class Translator_Controller extends Admin_Controller
 		$locales = Kohana::config('translator.locales');
 		$src_locale = $locales[0];
 
-		$query = sprintf("INSERT INTO %si18n_data (`file_id`, `locale`, `key`, `text`, `status`) VALUES ", 
+		$query = sprintf("INSERT INTO %si18n_data (file_id, locale, `key`, text, status) VALUES ", 
 							 $this->table_prefix);
 		$values_template = "(%d, '%s', '%s', '%s', %d)";
 
@@ -537,8 +536,8 @@ class Translator_Controller extends Admin_Controller
 				{
 					// remove from db
 					$updates[] = "DELETE FROM ".$this->table_prefix."i18n_data 
-								WHERE (`file_id` = '".$fid."'
-									AND `locale` = '".$locale."' 
+								WHERE (file_id = '".$fid."'
+									AND locale = '".$locale."' 
 									AND `key` = '".$key."')";
 				}
 			}
@@ -549,10 +548,10 @@ class Translator_Controller extends Admin_Controller
 				foreach ($upd as $key => $val)
 				{
 					$updates[] = "UPDATE ".$this->table_prefix."i18n_data 
-								SET `text` = '".$db->escape_str(serialize($lang[$key]))."', 
-									`status` = "._UPD_." 
-								WHERE (`file_id` = '".$fid."' 
-									AND `locale` = '".$locale."' 
+								SET text = '".$db->escape_str(serialize($lang[$key]))."', 
+									status = "._UPD_." 
+								WHERE (file_id = '".$fid."' 
+									AND locale = '".$locale."' 
 									AND `key` = '".$key."')";
 				}
 			}
@@ -703,7 +702,6 @@ class Translator_Controller extends Admin_Controller
 		if (isset($_GET['search']))
 		{
 			$keyword = array();
-			$query = '';
 
 			// Database instance
 			$db = new Database();
