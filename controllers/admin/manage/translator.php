@@ -18,6 +18,7 @@ class Translator_Controller extends Admin_Controller
 	var $table_prefix = '';
 	var $errors = array();
 
+
 	function __construct()
 	{
 		parent::__construct();
@@ -36,6 +37,7 @@ class Translator_Controller extends Admin_Controller
 		define('_UPD_', 3);
 	}
 
+	// main page
 	function index()
 	{
 		$this->template->content = new View('translator/main');
@@ -56,6 +58,13 @@ class Translator_Controller extends Admin_Controller
 		else
 		{
 			$status = (isset($_GET['view'])) ? (int) $_GET['view'] : 0;
+
+			if (isset($_GET['search']))
+			{
+				$query = '?search=' . (string) $_GET['search'];
+				if (isset($_GET['mode'])) $query .= '&mode=' . (string) $_GET['mode'];
+			}
+
 			$locales = Kohana::config('translator.locales');
 
 			if ($_POST)
@@ -72,13 +81,11 @@ class Translator_Controller extends Admin_Controller
 					if (isset($post['edit']))
 					{
 						// pass search keyword
-						$query = (isset($_GET['search'])) ? '?search=' . (string) $_GET['search'] : '';
 						url::redirect('admin/manage/translator/edit/'.$post['file_id'] . $query);
 					}
 					elseif (isset($post['write']))
 					{
 						$ret = $this->write($post['file_id']);
-
 						if (! empty($ret))
 						{
 							$errors[] = $ret;
@@ -91,7 +98,6 @@ class Translator_Controller extends Admin_Controller
 						$file->status = _NEW_;
 
 						$file->save();
-						// TODO: show success message
 					}
 				}
 				else
@@ -100,67 +106,70 @@ class Translator_Controller extends Admin_Controller
 					$error = TRUE;
 				}
 			}
-			elseif (! isset($_GET['search']))
+			else
 			{
-				$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
-
-				// check db
-				$row = ORM::factory('file', 1);
-				if (!$row->id)
+				// search
+				if (isset($_GET['search']))
 				{
-					// first run, init database
-					$this->template->content->init_db = TRUE;
-					$this->template->content->count = Kohana::config('translator.locale_count');
+					$fids = array();
 
-					$this->import_locale($lang_files);
-				}
-				// TODO: move to data management button/tab
-				else
-				{
-				/*	// Kohana internal cache issue, no clear internal cache method		
-					if (is_file('application/cache/kohana_find_file_paths'))
+					// Database instance
+					$db = new Database();
+
+					$sql = "SELECT file_id FROM ".$this->table_prefix."i18n_data 
+								WHERE ";
+					$sql .= (isset($_GET['mode'])) ? '`key`' : 'text';
+					$sql .= " LIKE '%" . $db->escape_str($_GET['search']) . "%'";
+
+					// return status not check
+					$result = Database::instance()->query($sql);
+					foreach ($result as $search)
 					{
-						unlink('application/cache/kohana_find_file_paths');
-						$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
+						$fids[] = $search->file_id;
 					}
-				*/
-					// check source locale files for updates
-					$this->sync_locale($lang_files);
-				}
-			}
-
-			// search
-			if (isset($_GET['search']))
-			{
-				$keyword = array();
-
-				// Database instance
-				$db = new Database();
-
-				$sql = "SELECT file_id FROM ".$this->table_prefix."i18n_data 
-							WHERE ";
-				$sql .= (isset($_GET['mode'])) ? '`key`' : 'text';
-				$sql .= " LIKE '%" . $db->escape_str($_GET['search']) . "%'";
-
-				// need to check return status on db operations?
-				$result = Database::instance()->query($sql);
-				foreach ($result as $search)
-				{
-					$keyword[] = $search->file_id;
-				}
 		
-				if (! empty($keyword))
-				{
-					$sql = "SELECT * FROM ".$this->table_prefix."i18n_file 
-								WHERE (id IN (" . implode(",", $keyword) . "))
-								ORDER BY path, filename";
-					$files = Database::instance()->query($sql);
-					$query = '?search=' . $db->escape_str($_GET['search']);
+					if (! empty($fids))
+					{
+						$sql = "SELECT * FROM ".$this->table_prefix."i18n_file 
+									WHERE (id IN (" . implode(",", $fids) . "))
+									ORDER BY path, filename";
+						$files = Database::instance()->query($sql);
+					}
+					else
+					{
+						$error = TRUE;
+						$errors[] = Kohana::lang('translator.no_search_result');
+					}
 				}
+				// import/sync db from files 
 				else
 				{
-					$error = TRUE;
-					$errors[] = Kohana::lang('translator.no_search_result');
+					$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
+
+					// check db
+					$row = ORM::factory('file', 1);
+					if (!$row->id)
+					{
+						// first run, init database
+						$this->template->content->init_db = TRUE;
+						$this->template->content->count = Kohana::config('translator.locale_count');
+
+						$this->import_locale($lang_files);
+					}
+					// TODO: move to data management button/tab
+					else
+					{
+					/*
+						// Kohana internal cache issue, no clear internal cache method		
+						if (is_file('application/cache/kohana_find_file_paths'))
+						{
+							unlink('application/cache/kohana_find_file_paths');
+							$lang_files = Kohana::list_files('i18n'.DIRECTORY_SEPARATOR.$locales[0], TRUE);
+						}
+					*/
+						// check source locale files for updates
+						$this->sync_locale($lang_files);
+					}
 				}
 			}
 
@@ -181,7 +190,7 @@ class Translator_Controller extends Admin_Controller
 	}
 
 	/*
-	* Check config settings
+	* Check config file, pass clean settings to kohana
 	*
 	* @return bool   TRUE means error, error message at $this->errors
 	*/
@@ -230,7 +239,7 @@ class Translator_Controller extends Admin_Controller
 	{
 		$locales = Kohana::config('translator.locales');
 		$values_template = "('%s', '%s', '%s', %d)";
-		$query = sprintf("INSERT INTO %si18n_file (path, filename, hash, status) VALUES ", 
+		$sql = sprintf("INSERT INTO %si18n_file (path, filename, hash, status) VALUES ", 
 							 $this->table_prefix);
 
 		$values = array();
@@ -245,9 +254,9 @@ class Translator_Controller extends Admin_Controller
 		}
 
 		// update file db
-		$query .= implode(",", $values);
-		// need to check return status on db operations?
-		$ret = Database::instance()->query($query);
+		$sql .= implode(",", $values);
+		// return status not check
+		$ret = Database::instance()->query($sql);
 
 		// handle file data
 		foreach ($file_list as $not_used => $full_path)
@@ -311,19 +320,19 @@ class Translator_Controller extends Admin_Controller
 		if (empty($ids_syn))
 		{
 			// set ALL file status to DEL in db
-			$query = 'UPDATE '.$this->table_prefix.'i18n_file SET status = '._DEL_;
-			// need to check return status on db operations?
-			$ret = Database::instance()->query($query);
+			$sql = 'UPDATE '.$this->table_prefix.'i18n_file SET status = '._DEL_;
+			// return status not check
+			$ret = Database::instance()->query($sql);
 		}
 		else	// Set file status to DEL except not modified, status update below
 		{
 			$ids = (count($ids_syn) > 1) 
 				? "NOT in (".implode(",", $ids_syn).")"
 				: "!= ".implode(",", $ids_syn);
-			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET status = %d WHERE id %s", 
+			$sql = sprintf("UPDATE ".$this->table_prefix."i18n_file SET status = %d WHERE id %s", 
 							 _DEL_, $ids);
-			// need to check return status on db operations?
-			$ret = Database::instance()->query($query);
+			// return status not check
+			$ret = Database::instance()->query($sql);
 		}
 
 		// modified, set file status to UPD 
@@ -334,14 +343,14 @@ class Translator_Controller extends Admin_Controller
 				: "= ".implode(",", $ids_upd);
 			$query = sprintf("UPDATE ".$this->table_prefix."i18n_file SET status = %d WHERE id %s", 
 							 _UPD_, $ids);
-			// need to check return status on db operations?
+			// return status not check
 			$ret = Database::instance()->query($query);
 
 			// update hash
-			foreach ($sql as $query)
+			foreach ($query as $sql)
 			{
-				// need to check return status on db operations?
-				$ret = Database::instance()->query($query);
+				// return status not check
+				$ret = Database::instance()->query($sql);
 			}
 		}
 
@@ -376,14 +385,14 @@ class Translator_Controller extends Admin_Controller
 		{
 			if ($file->loaded)
 			{
-				$query = "DELETE FROM ".$this->table_prefix."i18n_file WHERE id = ".$file->id;
-				// need to check return status on db operations?
-				$ret = Database::instance()->query($query);
+				$sql = "DELETE FROM ".$this->table_prefix."i18n_file WHERE id = ".$file->id;
+				// return status not check
+				$ret = Database::instance()->query($sql);
 
 				// delete data
-				$query = "DELETE FROM ".$this->table_prefix."i18n_data WHERE file_id = ".$file->id;
-				// need to check return status on db operations?
-				$ret = Database::instance()->query($query);
+				$sql = "DELETE FROM ".$this->table_prefix."i18n_data WHERE file_id = ".$file->id;
+				// return status not check
+				$ret = Database::instance()->query($sql);
 			}
 		}
 	}
@@ -402,7 +411,7 @@ class Translator_Controller extends Admin_Controller
 		$locales = Kohana::config('translator.locales');
 		$src_locale = $locales[0];
 
-		$query = sprintf("INSERT INTO %si18n_data (file_id, locale, `key`, text, status) VALUES ", 
+		$sql = sprintf("INSERT INTO %si18n_data (file_id, locale, `key`, text, status) VALUES ", 
 							 $this->table_prefix);
 		$values_template = "(%d, '%s', '%s', '%s', %d)";
 
@@ -561,23 +570,21 @@ class Translator_Controller extends Admin_Controller
 		{
 			foreach ($updates as $not_used => $sql)
 			{
-				// need to check return status on db operations?
+				// return status not check
 				$ret = Database::instance()->query($sql);
 			}
 		}
 
 		if (!empty($values))
 		{
-			$query .= implode(",", $values);
-			// need to check return status on db operations?
-			$ret = Database::instance()->query($query);
+			$sql .= implode(",", $values);
+			// return status not check
+			$ret = Database::instance()->query($sql);
 		}
 	}
 
 	/**
-	* TODO: add Google translation support
-	*
-	* @param int $id The file id 
+	*  @param int $id The file id 
 	*/
 	public function edit($id = FALSE)
 	{
@@ -643,7 +650,7 @@ class Translator_Controller extends Admin_Controller
 					$val = trim($value);
 
 					$blank = (empty($val)) ? TRUE : FALSE;
-					if (! $blank)
+					if (! $blank OR isset($post['reset']))
 					{
 						// check if unescaped single quote
 						$sq = strpos($value, "'");
@@ -702,7 +709,7 @@ class Translator_Controller extends Admin_Controller
 		// search
 		if (isset($_GET['search']))
 		{
-			$keyword = array();
+			$keys = array();
 
 			// Database instance
 			$db = new Database();
@@ -713,19 +720,18 @@ class Translator_Controller extends Admin_Controller
 			$sql .= (isset($_GET['mode'])) ? '`key`' : 'text';
 			$sql .= " LIKE '%" . $db->escape_str($_GET['search']) . "%')";
 
-			// need to check return status on db operations?
+			// return status not check
 			$result = Database::instance()->query($sql);
 			foreach ($result as $search)
 			{
-				$keyword[] = $search->key;
+				$keys[] = $search->key;
 			}
 			
-			if (! empty($keyword))
+			if (! empty($keys))
 			{
-				$query .= implode("','", $keyword);
 				$sql = "SELECT * FROM ".$this->table_prefix."i18n_data 
 							WHERE (file_id = $id 
-								AND `key` IN ('" . $query . "'))
+								AND `key` IN ('" . implode("','", $keys) . "'))
 							ORDER BY `key`, id";
 				$file_data = Database::instance()->query($sql);
 			}
@@ -815,6 +821,7 @@ class Translator_Controller extends Admin_Controller
 				$file_info .= "'" . (string) $_GET['search'] . "'";
 
 				$query = '?search=' . (string) $_GET['search'];
+				if (isset($_GET['mode'])) $query .= '&mode=' . (string) $_GET['mode'];
 			}
 		}
 
