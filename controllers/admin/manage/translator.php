@@ -639,9 +639,10 @@ class Translator_Controller extends Admin_Controller
 					$key_id = $post['key'];
 					$pos = $post['pos'];
 
-					$value = trim($post[$locale]);
+					$value = $post[$locale];
+					$val = trim($value);
 
-					$blank = (empty($value)) ? TRUE : FALSE;
+					$blank = (empty($val)) ? TRUE : FALSE;
 					if (! $blank)
 					{
 						// check if unescaped single quote

@@ -103,7 +103,6 @@
 	$locales = Kohana::config('translator.locales');
 
 	$pos = 0;
-	$css = ' cols="50" ';
 	$action = form::submit(array('name' => 'xlat', 'id' => 'button'), Kohana::lang('translator.set_xlat')) . '&nbsp;'
 		. form::submit(array('name' => 'reset', 'id' => 'button'), Kohana::lang('translator.set_new'));
 
@@ -116,7 +115,8 @@
 				$id = key($text);
 
 				$height = ceil(strlen($text[$id]) / 50) * 1.2;
-				if ($height != 0)  $css .= 'onClick="this.style.height=' . $height . ' + \'em\';"';
+				if (! $height)  $height = 1.2;
+				$css = ' cols="50" onClick="this.style.height=' . $height . ' + \'em\';"';
 
 				if ($lang_key == $locales[0])
 				{
@@ -150,7 +150,8 @@
 					$id = key($text2);
 
 					$height = ceil(strlen($text2[$id]) / 50) * 1.2;
-					if ($height != 0) $css .= 'onClick="this.style.height=' . $height . ' + \'em\';"';
+					if (! $height)  $height = 1.2;
+					$css = ' cols="50" onClick="this.style.height=' . $height . ' + \'em\';"';
 
 					if ($locale == $locales[0])
 					{
@@ -193,7 +194,7 @@
 				<div class="tabs">
 					<div class="tab">
 						<ul>
-							<li class="rhs"><a href="<?php echo url::site() . 'admin/manage/translator' ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
+							<li class="rhs"><a href="<?php echo url::site() . 'admin/manage/translator' . $search; ?>"><?php echo Kohana::lang('translator.file_list');?></a></li>
 							<li><a href="#" name="go_top"><?php echo Kohana::lang('translator.go_top');?></a></li>
 						</ul>
 					</div>
