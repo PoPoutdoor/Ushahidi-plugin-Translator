@@ -13,7 +13,7 @@ This tool supports up to 2 level $lang array.
 
 To do
 -----
-1. Add 'Manage' tab to handle database operations. e.g. clear all data, remove 
+1. Add 'Manage' tab/button to handle database operations. e.g. clear all data, remove 
    data of written file, etc.
 2. Remove dependency of Ushahidi system (make this tool works on any kohana 2.3)
 3. Add feature to call external online translation on Edit page.
@@ -41,4 +41,4 @@ Change log
 ----------
 2012-07-21 Initial release.
 2012-07-24 Update README.md and readme.txt.
-2012-08-12 Code completed for v0.1.
+2012-08-13 Code completed for v0.1.
