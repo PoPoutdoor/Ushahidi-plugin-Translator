@@ -15,7 +15,7 @@ A tool for i18n translation, need admin rights.
 This tool supports up to 2 level $lang array.
 
 == To do ==
-1. Add 'Manage' tab to handle database operations. e.g. clear all data, remove 
+1. Add 'Manage' tab/button to handle database operations. e.g. clear all data, remove 
    data of written file, etc.
 2. Remove dependency of Ushahidi system (make this tool works on any kohana 2.3)
 3. Add feature to call external online translation on Edit page.
