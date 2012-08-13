@@ -281,7 +281,7 @@ class Translator_Controller extends Admin_Controller
 		$locales = Kohana::config('translator.locales');
 		$update_hash = "UPDATE ".$this->table_prefix."i18n_file SET hash = '%s' WHERE id = %d";
 
-		$ids_syn = $ids_upd = $file_new = $file_upd = $sql = array();
+		$ids_syn = $ids_upd = $file_new = $file_upd = $ids_hash = array();
 
 		// get filesystem file info
 		foreach ($file_list as $not_used => $full_path)
@@ -298,7 +298,7 @@ class Translator_Controller extends Admin_Controller
 				if ($file->hash != $hash)
 				{
 					// update file hash
-					$sql[] = sprintf($update_hash, $hash, $file->id);
+					$ids_hash[] = sprintf($update_hash, $hash, $file->id);
 					// set status to UPD
 					$ids_upd[] = $file->id;
 					$file_upd[] = $full_path;
@@ -347,7 +347,7 @@ class Translator_Controller extends Admin_Controller
 			$ret = Database::instance()->query($query);
 
 			// update hash
-			foreach ($query as $sql)
+			foreach ($ids_hash as $sql)
 			{
 				// return status not check
 				$ret = Database::instance()->query($sql);
