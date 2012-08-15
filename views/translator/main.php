@@ -112,7 +112,7 @@
 								if ($hr)  echo '<tr><td colspan="4"><hr /></td></tr>';
 								$all_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id))->count_all();
 								$xlat_keys = ORM::factory('data')->where(array('locale !=' => $locales[0], 'file_id' => $file->id, 'status' => _XLT_))->count_all();
-								$progress = intval(floor(($xlat_keys / $all_keys)*100));
+								$progress = ($xlat_keys) ? intval(floor(($xlat_keys / $all_keys)*100)) : 0;
 								// update file status if 100% translated
 								if ($progress == 100)
 								{

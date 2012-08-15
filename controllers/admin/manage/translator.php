@@ -281,7 +281,7 @@ class Translator_Controller extends Admin_Controller
 		$locales = Kohana::config('translator.locales');
 		$update_hash = "UPDATE ".$this->table_prefix."i18n_file SET hash = '%s' WHERE id = %d";
 
-		$ids_syn = $ids_upd = $file_new = $file_upd = $ids_hash = array();
+		$ids_syn = $ids_upd = $ids_hash = $file_upd = $file_new = array();
 
 		// get filesystem file info
 		foreach ($file_list as $not_used => $full_path)
@@ -411,7 +411,7 @@ class Translator_Controller extends Admin_Controller
 		$locales = Kohana::config('translator.locales');
 		$src_locale = $locales[0];
 
-		$sql = sprintf("INSERT INTO %si18n_data (file_id, locale, `key`, text, status) VALUES ", 
+		$insert = sprintf("INSERT INTO %si18n_data (file_id, locale, `key`, text, status) VALUES ", 
 							 $this->table_prefix);
 		$values_template = "(%d, '%s', '%s', '%s', %d)";
 
@@ -577,9 +577,9 @@ class Translator_Controller extends Admin_Controller
 
 		if (!empty($values))
 		{
-			$sql .= implode(",", $values);
+			$insert .= implode(",", $values);
 			// return status not check
-			$ret = Database::instance()->query($sql);
+			$ret = Database::instance()->query($insert);
 		}
 	}
 
