@@ -653,7 +653,7 @@ class Translator_Controller extends Admin_Controller
 					if (! $blank OR isset($post['reset']))
 					{
 						// check if unescaped single quote
-						$sq = strpos($value, "'");
+						$sq = strrpos($value, "'");
 						if ($sq !== FALSE)
 						{
 							if (! $sq OR substr($value, $sq - 1, 2) != "\'")
